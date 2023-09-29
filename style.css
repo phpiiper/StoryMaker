@@ -1,0 +1,275 @@
+html {width: 100%; height: 100%; overflow-x: hidden;}
+#content {width: 100%; height: 100%;}
+body {
+    margin: 0; padding: 0;
+    font-size: 18px;
+    width: 100%; height: 100%;
+}
+div, input, span, select, img, a, button, tr, td, button, textarea {position: relative; box-sizing: border-box; font-size: 18px; font-family: "Cairo"; transition: 0.2s; outline: none; border: none;}
+    #bcPreview input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0;}
+
+.SVGD {background-repeat: no-repeat; background-size: contain; background-position: center;
+
+}
+body .icon {display: flex; justify-content: center; align-items: center; cursor: pointer; transition: 0.2s; width: fit-content; padding: 0.5em;}
+    .iconDiv {display: flex; flex-direction: column; justify-content: center; align-items: center;}
+        .iconDiv > div {width: 100%; text-align: center; font-size: 0.8em;}
+    .iconButtonDiv {display: flex; flex-direction: column; margin: 0 0.25em; align-items: center; justify-content: center;}
+        .iconButton {padding: 0; border-radius: 50%;  width: fit-content;}
+        .iconButton:hover {background-color: rgba(var(--c1B)); cursor: pointer;}
+        .iconButtonDiv > div:last-child {text-align: center; width: max-content;}
+
+.hiddenScroll::-webkit-scrollbar, .hiddenScroll div::-webkit-scrollbar {width: 0 !important; height: 0 !important;}
+#toast {min-width: 250px; max-width: 40%; min-height: 60px; max-height: 120px;
+    margin-left: -125px; text-align: center; display: flex; justify-content: center; align-items: center; border-radius: 2px; padding: 16px; position: fixed;
+    z-index: 100; right: 30px; top: 30px; transform: translateY(-10px); transition: 1s; opacity: 0;
+    background-color: rgba(var(--c1)); color: #fff;
+    box-shadow: 3px 6px 3px rgba(0,0,0,0.4);
+}
+#toast.visible { transform: translateY(0px); opacity: 1; }
+
+.popUp { min-width: 250px; max-width: 40%; min-height: 100px; max-height: 220px; display: flex; flex-direction: column; background-color: white; padding: 1em; box-shadow: 2px 2px 4px rgba(0,0,0,0.6);}
+    .popUp .topDiv {width: 95%; padding: 0.5em; text-align: center;}
+    .popUp .bottomDiv {display: flex; justify-content: center;}
+    .popUp .bottomDiv .coolButton {margin-right: 1em; font-weight: bold;}
+        .popUp.bottomDiv .coolButton:last-child {margin-right: 0;}
+        .popUp .coolButton:first-child:hover, .coolButton span {color: red;}
+        .popUp .coolButton:last-child:hover, .coolButton span {color: green;}
+
+.coverDiv {
+    width: 100vw; height: 100vh; position: fixed; background-color: rgba(0,0,0,0.4); top: 0; left: 0;z-index: 5;
+    display: flex; justify-content: center; align-items: center;
+}
+.textBtn {text-decoration: none; color: inherit;}
+
+.coolButton {display: flex; align-items: center; padding: 0.1em 0.75em; background-color: white; border-radius: 1em; width: fit-content; transition: 0.1s; user-select: none; border: none;}
+    .coolButton div {margin-left: 0.5em; }
+        .coolButton span {}
+    .coolButton:hover {cursor: pointer;}
+    .coolButton.normal:active {box-shadow: 2px 2px 4px rgba(0,0,0,0.8); transform: translateY(2px);}
+
+    .coolButton.flat:active {transform: scale(1.1);}
+        .coolButton.flat {background-color: transparent;}
+
+
+.dragOver {background-color: rgba(var(--c2)) !important;}
+
+
+
+
+:root {
+    --c1: 180, 145, 174;
+    --c2: 102, 143, 128;
+    --c3: 74, 102, 112;
+    --c4: 214, 162, 173;
+    --c5: 117, 87, 125;
+    --c1A: 191,127,122; --c1B: 204,155,171; --c1C: 195,155,204; --c1D: 173,147,194;
+    --c2A: 103,146,156; --c2B: 109,166,161; --c2C: 109,166,129; --c2D: 103,156,106;
+    --c3A: 76,86,125; --c3B: 82,107,135; --c3C: 82,135,135; --c3D: 76,125,111;
+    --c4A: 227,176,161; --c4B: 237,174,168; --c4C: 237,168,218; --c4D: 219,161,227;
+    --c5A: 138,90,109; --c5B: 148,96,143; --c5C: 123,96,148; --c5D: 101,90,138;
+}
+
+.scrollBar::-webkit-scrollbar, .scrollBar div::-webkit-scrollbar, .scrollBar textarea::-webkit-scrollbar { width: 10px; height: 10px;}
+.scrollBar::-webkit-scrollbar-track, .scrollBar div::-webkit-scrollbar-track, .scrollBar textarea::-webkit-scrollbar-track { background-color: rgba(var(--c1)); border-radius: 1em; box-shadow: inset 0px 0px 0.2em rgba(0,0,0,0.7);}
+.scrollBar::-webkit-scrollbar-thumb, .scrollBar div::-webkit-scrollbar-thumb, .scrollBar textarea::-webkit-scrollbar-thumb { border-radius: 1em; transition: 0.2s; background-color: rgba(var(--c5));}
+.scrollBar::-webkit-scrollbar-thumb:hover, .scrollBar div::-webkit-scrollbar-thumb:hover, .scrollBar textarea::-webkit-scrollbar-thumb:hover { background-color: rgba(var(--c5),0.8); }
+.link {text-decoration: none; color: inherit;}
+
+
+#homePage { width: 100%; height: 100%; background-color: pink;
+display: flex; align-items: end;
+}
+
+.dropdownContainer {display: flex; flex-direction: column; margin-bottom: 1em; height: 3rem; border: 2px solid black;}
+.dropdown {width: 100%; height: 100%;  background-color: white;  border-radius: 0.1em 0.1em 0 0;}
+    .dpTop {width: 100%; height: 100%; display: flex;}
+        .dpTop input {width: 100%; height: 100%; padding: 0.2em 0.5em; }
+        .dpTop div {width: 100%; height: 100%; padding: 0.2em 0.5em;}
+            .dpTop .dpOption:hover {background-color: inherit;}
+        .dpTop .arrow {height: 100%; display: flex; align-items: center; justify-content: center;}
+        .dropdown:hover .dpBot {max-height: 6em; overflow-y: auto; border-color: black; background-color: white;}
+    .dpBot {width: calc(100% + 3px); max-height: 0; position: absolute; top: calc(100% + 2px); left: -1.5px; border: 2px solid black; border-radius: 0 0 0.1em 0.1em; border-color: rgba(0,0,0,0); border-top: none; overflow: hidden; z-index: 2;}
+        .dpBot:empty {border: none;}
+        .dpOption {width: 100%; background-color: white; padding: 0.2em 0.5em; display: flex; align-items: center; user-select: none;}
+            .dpOption:hover {cursor: pointer; background-color: grey;}
+        .dpInputOption {width: fit-content !important; border: 1px solid black; border-radius: 0.2em; margin-right: 0.2em;}
+    .dropdownContainer > span {position: absolute; top: 94%; margin-left: 0.75em; margin-top: -0.15em; font-size: 0.8em;}
+
+
+.inputContainer {display: flex; flex-direction: column; margin-bottom: 1em;}
+    .input {width: 100%; height: 3em; background-color: white; border: 2px solid black; border-radius: 0.1em; padding: 0.2em 0.5em;}
+        .input[type=range]{ border: none; height: 1em; -webkit-appearance: none;
+        }
+        .input[type=range]:focus { outline: none; }
+        .input[type=range]::-webkit-slider-runnable-track { cursor: pointer;}
+        .input[type=range]::-webkit-slider-thumb { position: relative; cursor: pointer;-webkit-appearance: none; margin-top: -11px; top: 5px;
+
+            box-shadow: 1px 1px 1px #000000; border: 1px solid #000000; background: #FFFFFF;height: 30px; width: 15px;
+        }
+        /* type 1 */ /* Circle thumb */
+        .inputContainer.type1 {background-color: grey;}
+            .inputContainer .input[type=range] {background-color: black;}
+            .inputContainer.type1 .input[type=range]::-webkit-slider-thumb {width: 30px; border-radius: 15px;}
+        /* type 2 */ /* Circle thumb */
+        .inputContainer.type2 {background-color: black;}
+            .inputContainer.type2 .input[type=range] {background-color: black;}
+            .inputContainer.type2 .input[type=range]::-webkit-slider-thumb {width: 30px; border-radius: 15px;}
+
+
+    .inputContainer > span {position: absolute; top: 96%; margin-left: 0.75em; margin-top: -0.15em; font-size: 0.8em;}
+
+.tableDiv {overflow: auto; width: 100%; height: 100%;}
+.table {display: flex; flex-direction: column; border: 2px solid black; width: 100%; height: 100%;}
+    .table .row {display: flex; height: 100%;}
+    .table .cell {display: flex; /*flex: 1 0 auto;*/ height: 100%; align-items: center; justify-content: center; text-align: center; border: 1px solid black; width: 100%;}
+    #tableBar {background-color: black; color: white; display: flex; align-items: center; justify-content: center; cursor: pointer;}
+
+#mcPrepTable {width: 100%; height: 100%; background-color: green; display: flex; flex-direction: column;}
+    #mcPrepTable .row {width: 100%; height: 100%; background-color: white; border-bottom: 4px solid black; display: flex;}
+        #mcPrepTable .row:last-child {border-bottom: none;}
+        #mcPrepTable .cell {width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; cursor: pointer; border-right: 4px solid black;}
+            #mcPrepTable .cell:last-child {border-right: none;}
+        #mcPrepTable .cell#selectedCell {background-color: rgba(var(--c1));}
+        #mcPrepTable .icon {position: absolute; right: 0; bottom: 0; margin: 0.2em; font-size: 0.8em;}
+
+.opDiv {width: calc(100% - 0.4em); border: 1px solid black; display: flex; margin: 0.2em;}
+    .opdOp {cursor: pointer; width: 100%; display: flex; align-items: center; justify-content: center; user-select: none;}
+        .opdOp.selected {background-color: rgba(var(--c1));}
+
+
+.hpBook {width: 24vw; height: 98%; border: 2px solid black; background-color: white; margin: 0.5em; display: flex; align-items: center; justify-content: center; flex-direction: column; user-select: none; cursor: pointer;}
+    .hpbText {font-size: 3.5vw; writing-mode: vertical-rl; text-orientation: upright; height: 100%; display: flex; align-items: center; justify-content: center; font-family: "Chakra Petch";}
+    .hpbUnder {font-size: 2em; padding: 1em;}
+
+#storyManager {width: 95%; height: 98%; background-color: white; display: flex; flex-direction: column;}
+    #smTopDiv {width: 100%; background-color: white; padding: 1em 0.5em; display: flex; border-bottom: 4px solid black; align-items: center;}
+
+#moduleManager {width: 95%; height: 98%; background-color: white; display: flex; flex-direction: column;}
+    #mmTopDiv {width: 100%; height: 10em; background-color: rgba(var(--c1)); padding: 0.2em 2em; display: flex;  align-items: center;}
+        #mmTopDiv > div:first-child {font-size: 2.2rem; width: 100%;}
+        #mmOptionsList {display: flex;}
+    #mmBotDiv {height: 100%; padding: 2em; display: flex; flex-wrap: wrap; align-content: flex-start;}
+        .mmModule {width: calc(50% - 1.5em); background-color: rgba(var(--c3C),0.7); display: flex; height: fit-content; border-radius: 0.3em; align-items: center; margin: 0.25em 0.75em; }
+            .mmModule .icon {width: 20%;}
+            .mmModule .mmName {width: 75%; height: 100%;}
+                .mmModule .mmName:hover {cursor: pointer;}
+            #moduleManager #selectedModule {background-color: rgba(var(--c3C),0.9); outline: 3px solid black;}
+
+            .mmModule .mmTypeList {display: flex; flex-direction: column; width: 20%; padding: 0.2em 0.4em;}
+                .mmModule .mmTypeList div {background-color: white; margin-bottom: 0.2em; text-align: center; border-radius: 0.2em; user-select: none;}
+                .mmModule .mmTypeList div:last-child {margin-bottom: 0;}
+
+
+
+#moduleCreator {width: 98%; height: 98%; background-color: white; display: flex; overflow: auto;}
+    #mcLeftDiv {width: 77.6%; height: 100%;display: flex; flex-direction: column;}
+        #mcPreviewMod {width: calc(100% - 1em); height: 300px; padding: 1em; border-bottom: 3px solid black; margin-left: 1em; overflow: auto; }
+        #mclBottom {width: 100%; height: calc(100% - 300px); display: flex;}
+            #mclInfoDiv {width: 25%; height: 100%; display: flex; flex-direction: column; padding: 0.5em;}
+            #mcModList {display: flex; flex-direction: column; width: 100%; height: calc(100% - 5em); padding: 0.5em 1em;}
+    #mcRightDiv {width: 20%; min-width: 20%; display: flex; flex-direction: column; margin: 1em; border: 2px solid black;}
+        .mcrTitle {width: 100%; padding: 0.25em 0.5em; background-color: white; text-align: center; border-bottom: 2px solid black; user-select: none; cursor: pointer;}
+            .mcrTitle:first-child {border-bottom: none; background-color: black; color: white;}
+        #mcStyleList {width: 100%; height: 100%; display: flex; flex-direction: column; overflow-y: auto;}
+            .mlsdDiv {width: 100%; display: flex; align-items: center;border-bottom: 2px solid black;}
+                .mlsdDiv input {width: 100%; height: 100%; padding-bottom: 0.8em; padding-top: 0.2em;}
+                .mlsdDiv span {position: absolute; left: 0; bottom: -4px; margin-left: 0.3em; font-size: 0.6em;}
+
+
+
+#mcTableOptionsDiv {width: 100%; margin: 1em 0; border: 2px solid black; height: 100%; display: flex; background-color: white;}
+    #mcTOPrev {width: 70%; height: 100%; border-right: 3px solid black;}
+    #mcTOODiv {width: 30%; height: 100%; overflow-y: auto; overflow-x: hidden;}
+
+#mccbPopup {width: 80%; height: 70%; background-color: white; display: flex; flex-direction: column;}
+    #mccbpPrev {width: 100%; height: 100%; border-bottom: 2px solid black; margin-bottom: 0.2em; padding: 1em;}
+        #mccbpPrev:after {content: "Mod Preview"; position: absolute; right: 0; bottom: 0; margin: 0.5em; background-color: black; color: white; padding: 0.2em 0.4em; border-radius: 2px;}
+    #mccbpBot {width: 100%; height: 25%;}
+        #mccpbText {text-align: center;}
+        #mccpbBList {width: 100%; padding: 0.2em; display: flex; justify-content: center;}
+            #mccpbBList .coolButton {margin: 0.2em 0.5em; background-color: rgba(var(--c1),0.9);}
+            #mccpbBList .coolButton:hover {background-color: rgba(var(--c1));}
+
+
+
+
+
+#mStoryCreator {width: 70%; height: 55%; background-color: white; top: -100px; padding: 1em; padding-top: 0; display: flex; flex-direction: column;}
+    #mStoryCreator .title {padding: 1em; text-align: center; font-size: 1.5em; font-weight: bold;}
+    #mscBottom {display: flex; width: 100%; height: 100%;}
+        #mscLeft {width: 80%; height: 100%;}
+        #mscRight {height: 100%; padding: 0 0.75em; width: fit-content;}
+        #mscBottom .coolButton {background-color: rgba(var(--c1)); margin: 0.5em 0; margin-right: 1em;}
+            #mscBottom .coolButton:first-child {padding-top: 0; margin-top: 0;}
+            #mscBottom .coolButtonText {width: max-content;}
+
+#storyCreator {width: 98%; height: 98%; background-color: white; display: flex;}
+    #scHierarchy {width: 20%; height: 100%; background-color: pink; display: flex; flex-direction: column; border: 2px solid black; }
+        #schList {width: 100%; height: 100%; background-color: peachpuff; overflow: auto; display: flex; flex-direction: column; align-items: center;}
+            .scModule {display: flex; width: 100%; background-color: grey; border-bottom: 1px solid black; border-top: 1px solid black;}
+                .scModule:last-child {border-bottom-width: 2px;}
+                    .scModule#selectedSCModule {background-color: orange !important;}
+                    .scModule#scOpenItem {background-color: pink;}
+                .scModule .icon {user-select: none;}
+                .scModule input {width: 100%; padding-left: 0.5em; padding-right: 0.5em; background-color: white;  border-left: none;}
+            .scmBody {width: 98%; padding: 0.1em 0 1em 0; background-color: white; border-radius: 0 0 0.2em 0.2em; border: 2px solid black; border-top: none; margin-bottom: 2px; display: flex; flex-direction: column; align-items: center;}
+                .scmBody > .scmBody:nth-child(even){background-color: rgba(244,244,244);}
+
+        #schMenu {width: 100%; height: 3rem; background-color: mediumpurple; }
+            #schMenu > .icon:hover {cursor: default;}
+            #schmPopup {transition: 0.5s; position: absolute; width: 100%; max-height: 0; overflow: hidden; bottom: 100%;}
+            #schMenu:hover #schmPopup {max-height: 400px;}
+    #scPreview {width: 60%; height: 100%; background-color: white; border: 2px solid black; border-right: none; border-left: none;}
+    #scStyleList {width: 20%; height: 100%; background-color: white; border: 2px solid black; overflow: auto;}
+        .slTitle {width: 100%; padding: 0.25em 0.5em; text-align: center; border-bottom: 2px solid black;}
+#scContextMenu {position: absolute; display: flex; flex-direction: row; width: 8rem;
+    left: 0%;
+}
+    #scContextMenu .sccmRow { display: flex; align-items: center; justify-content: left; padding: 0.25em; padding-top: 0;}
+        #scContextMenu .sccmRow:first-child {padding-left:0;}
+
+
+#scModulePicker {width: 70%; height: 95%; background-color: white; display: flex; flex-direction: column;}
+    #scmpTitle {width: 100%; padding: 1em; font-size: 1.4em; text-align: center;}
+    #scmpList {width: 100%; height: 100%; display: flex; flex-wrap: wrap; align-content: flex-start;}
+    #scmpList #selectedModule {background-color: rgba(var(--c3C),0.9); outline: 3px solid black;}
+
+
+.menuList {user-select: none;}
+    .menuOption {display: flex; align-items: center; padding: 0.5em; background-color: white; border-bottom: 2px solid black;}
+        .menuOption:hover {cursor: pointer;}
+        .menuHeader:hover {cursor: initial;}
+        .menuText {display: flex; align-items: center;}
+        .menuOption .icon {background-color: black; color: white;}
+.titleDiv {width: 100%; padding: 0.25em 0.5em; text-align: center; border-bottom: 2px solid black;}
+/* character sheet modules */
+    /* FLIPCARD */
+.flipcardDiv {width: 100%; height: 100%; user-select: none; cursor: pointer;}
+    .fcCard {width: 100%; height: 100%; display: flex;}
+    /* BAR */
+.barDiv {display: flex; align-items: center;}
+    .barMain {display: flex; align-items: center;}
+    .barTextDiv {height: 100%;}
+    .barBlockDiv {width: 100%; background-color: yellow;}
+        .barBlock {display: flex; justify-content: center; align-items: center; background-color: white; width: 1em; height: 1em;}
+
+
+#sheetCreator {width: 98%; height: 98%; background-color: white; display: flex;}
+    #shLeft {width: 20%; height: 100%; background-color: white; display: flex; flex-direction: column;}
+        #shList {height: 100%; display: flex; flex-direction: column; overflow: auto;}
+            .shModule {display: flex; width: 100%; background-color: rgba(var(--c5A)); border-bottom: 1px solid black; border-top: 1px solid black;}
+                .shModule:last-child {border-bottom-width: 2px;}
+                    .shModule#selectedSHModule {background-color: orange !important;}
+                    .shModule#shOpenItem {background-color: pink !important;}
+                .shModule .icon {user-select: none;}
+                .shModule input {width: 100%; padding-left: 0.5em; padding-right: 0.5em; background-color: white;  border-left: none;}
+        #shMenuDiv {width: 100%; height: 3em; background-color: rgba(var(--c5A)); display: flex; align-items: center;}
+            #shMenuDiv > .icon:hover {cursor: default;}
+            #shmPopup {transition: 0.25s; position: absolute; width: 100%; max-height: 0; overflow: hidden; bottom: 100%;}
+            #shMenuDiv:hover #shmPopup {max-height: 400px;}
+    /* FLIPCARD */
+    #shsFlipSelect {width: 100%; background-color: white; display: flex; align-items: center; justify-content: center; padding: 0.25em 1em; user-select: none; cursor: pointer;}
+        #shsFlipSelect:hover {background-color: black; color: white;}
+    #shPreview {width: 60%; height: 100%; background-color: white; border-left: 0.2em solid rgba(30,30,30); border-right: 0.2em solid rgba(30,30,30); overflow: auto; }
+    #shStyleDiv {width: 22%; height: 100%; background-color: white; overflow: auto;}
