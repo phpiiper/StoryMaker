@@ -32,11 +32,13 @@ var sbOptions = [
 
 const dpList = [
 { text: "Stories", ops: storyList, id: "storyPicker", type: "dropdown-static", fList: {
-        click: function(){
-            if (pd("storyPicker").inputElem && pd("storyPicker").inputElem.childNodes.length > 0){
-                let obj = JSON.parse(pd("storyPicker").inputElem.childNodes[0].dataset.data);
-                let d = getDataset("storyManager","data"); d[0].dataset.data = JSON.stringify(obj)
+        click: function(){ let p = pd("storyPicker");
+            if (p.input()){
+                let obj = storyList.find(x => (p.inputElem().childNodes[0].id));
+                let d = getDataset("storyManager","data");
+                    d[0].dataset.data = JSON.stringify(obj)
                 console.log(JSON.parse(d[0].dataset.data))
+                createStoryCreator("content",d[1])
             }
 
 
@@ -44,28 +46,36 @@ const dpList = [
             {affect: ["parent"], type: "width", val: "70%"}, {affect: ["parent"], type: "border-radius", val: "0.25em"}, {affect: "parent", type: "margin-right", val: "2em"}
         ]
     },
-{ text: "Type", ops: ["Input","Dropdown","Table"], id: "mcType", type: "dropdown-static", fList: { click: function(){
-let ch = event.currentTarget.innerText; let st = document.getElementById("mcSubtype"); for (var i=0; i<st.listElem.childNodes.length; i++){ let n = st.listElem.childNodes[i]; if (!moduleTypes[ch].includes(n.innerText)){n.style.display = "none"} else {n.style.display = null}} // for loop
-    let inpV = st.inputElem; if (inpV.childNodes.length > 0){
-    if (!moduleTypes[ch].includes(inpV.childNodes[0].innerText)){inpV.childNodes[0].style.display = "none";}; st.listElem.appendChild(inpV.childNodes[0]);}
-    let fi = Array.from(st.listElem.childNodes).filter(x => x.style.display !== "none");
-        st.inputElem.appendChild(fi[0]);
-    // modoptions
-   saveDataset("moduleCreator","data",getModOptions());createModList(document.getElementById("mcModList"),getModOptions()); createPreview(document.getElementById("mcPreviewMod"),getModOptions())
-}}, style: [ {affect: ["parent"], type: "width", val: "100%"}, {affect: ["parent"], type: "border-radius", val: "0.25em"}, {affect: "parent", type: "margin-right", val: "2em"}]},
+{ text: "Type", ops: ["Input","Dropdown","Table"], id: "mcType", type: "dropdown-static", fList: {click: function(){
+    let ch = pd("mcType").input(); let st = pd("mcSubtype");
+    st.select();
+    for (var i=0; i<st.list().length; i++){
+        let n = st.list()[i]; if (!moduleTypes[ch].includes(n.innerText)){n.style.display = "none"} else {n.style.display = null}
+    }
+    let fi = st.list().filter(x => x.style.display !== "none" && x.parentNode.classList.contains("dpBot"));
+    st.inputElem().appendChild(fi[0]);
+    // mod options
+    saveDataset("moduleCreator","data",getModOptions());
+    createModList(pd("mcModList"),getModOptions());
+    createPreview(pd("mcPreviewMod"),getModOptions());
+    }
+}, style: [ {affect: ["parent"], type: "width", val: "100%"}, {affect: ["parent"], type: "border-radius", val: "0.25em"}, {affect: "parent", type: "margin-right", val: "2em"}]},
 { text: "Subtype", ops: ["Text","Number","Textarea","Range","Color","Static","Input","Expandable"], id: "mcSubtype", type: "static", style: [ {affect: ["parent"], type: "width", val: "100%"}, {affect: ["parent"], type: "border-radius", val: "0.25em"}, {affect: "parent", type: "margin-right", val: "2em"},{affect: ["child"], type: "display", val: "none"}],
 fList: {click: function(){saveDataset("moduleCreator","data",getModOptions());createModList(document.getElementById("mcModList"),getModOptions()); createPreview(document.getElementById("mcPreviewMod"),getModOptions())}}
 },
-{id: "mcOptions", type: "dropdown-input", text: "Options", style: [{type: "width", val: "100%",affect: ["parent"]}, {type: "height", val: "3em", affect: "parent"}], fList: {change: function(){ saveDataset("moduleCreator","data",getModOptions()); }, click: function(){saveDataset("moduleCreator","data",getModOptions());}, keyup: function(){saveDataset("moduleCreator","data",getModOptions());}
+{id: "mcOptions", type: "dropdown-input", text: "Options", style: [{type: "width", val: "100%",affect: ["parent"]}, {type: "height", val: "calc(3rem - 0.4em)", affect: "parent"}], fList: {change: function(){ saveDataset("moduleCreator","data",getModOptions()); }, click: function(){saveDataset("moduleCreator","data",getModOptions());}, keyup: function(){saveDataset("moduleCreator","data",getModOptions());}
 }},
 {id: "mctType", type: "dropdown-static", text: "Type", style: [{type: "width", val: "100%",affect: ["parent"]}, {type: "height", val: "3em", affect: "parent"},{type: "border", val: "none", affect: "parent"},{type: "border-bottom", val: "2px solid black", affect: "parent"}], ops: ["Title","Input"], fList: {click: function(){
     let tx = event.currentTarget.innerText; let pto = document.getElementById("mcTOODiv")
         if (pto !== null){ let dt = getDataset(pto,"data"); dt[1].type = tx; dt[0].dataset.data = JSON.stringify(dt[1])
     ptSave(); saveDataset("moduleCreator","data",getModOptions());}
-    }}
+}}
 },
-{id: "mctExpandable", type: "dropdown-static", text: "Expand", ops: ["Right","Bottom"], style: [{type: "width", val: "8em", affect: "parent"},{type: "margin-left", val: "1em", affect: "parent"},{type: "height", val: "3em", affect: "parent"}],fList: {
-    click: function(){let d = getDataset("mcTableOptionsDiv","data"); if (d){ d[1].expand = this.innerText; d[0].dataset.data = JSON.stringify(d[1]); getModOptions();} }}
+{id: "mctExpandable", defaultVal: "Right", type: "dropdown-static", text: "Expand", ops: ["Right","Bottom","Both"], style: [{type: "width", val: "8em", affect: "parent"},{type: "margin-left", val: "1em", affect: "parent"},{type: "height", val: "3em", affect: "parent"}],fList: {
+    click: function(){
+        ptSave();
+        getModOptions();
+    }}
 },
 {id: "slgAlignment", type: "dropdown-static", text: "Item Alignment", ops: ["Horizontal","Vertical"], style: [{type: "width", val: "100%", affect: "parent"},{type: "height", val: "3em", affect: "parent"}],fList: {
     click: function(){
@@ -92,10 +102,10 @@ const inpList = [
 {id: "mcCreateBtn", type: "input-button", value: "Create Module", style: [{type: "cursor", val: "pointer", affect: "parent"},{type: "backgroundColor",val: "black", affect: "parent"}, {type: "color", val: "white", affect: "parent"}], fList: {click: function(){ saveDataset("moduleCreator","data",getModOptions());
 mccbPopup(getModOptions())
 }}},
-{id: "mcRows", type: "input-number", text: "Rows", value: 2, style: [{type: "width", val: "4em", affect: "parent"},{type: "margin-right", val: "1em", affect: "parent"}], fList: {change: function(){
+{id: "mcRows", min: 1, type: "input-number", text: "Rows", value: 2, style: [{type: "width", val: "4em", affect: "parent"},{type: "margin-right", val: "1em", affect: "parent"}], fList: {change: function(){
     ptShiftTable("row",event.currentTarget.value)
 }}},
-{id: "mcCols", type: "input-number", text: "Columns", value: 2, style: [{type: "width", val: "4em", affect: "parent"}], fList: {change: function(){
+{id: "mcCols", min: 1, type: "input-number", text: "Columns", value: 2, style: [{type: "width", val: "4em", affect: "parent"}], fList: {change: function(){
     ptShiftTable("col",event.currentTarget.value)
 }}},
 {id: "ptValue", type: "input-text", text: "Value", style: [{type: "border-left", val: "none",affect: ["parent"]},{type: "border-right", val: "none",affect: ["parent"]},{type:"margin-top",val: "1em",affect:"parent"}], fList: {change: function(){
@@ -212,5 +222,5 @@ const inputRowList = [
     {name: "start", type: "input", obj: {type: "input-number", text: "Start", min: 0, style: [{type: "width", val: "3.5em",affect: ["parent"]},{type: "margin-right", val: "1em",affect: "parent"}], fList: {change: function(){ SLSave()}}}},
     {name: "end", type: "input", obj: {type: "input-number", text: "End", min: 0, style: [{type: "width", val: "3.5em",affect: ["parent"]},{type: "margin-right", val: "1em",affect: "parent"}], fList: {change: function(){ SLSave()}}}},
     {name: "value", type: "input", obj: {type: "input-text", text: "Value", style: [{type: "width", val: "calc(100% - 9em)",affect: ["parent"]}], fList: {change: function(){SLSave()}}}}
-]}
+]},
 ]
