@@ -173,9 +173,9 @@ function createFlipcard(obj){ let div = document.createElement("div"); div.class
     return div
 }
 
-function createBar(obj){ let div = document.createElement("div"); div.className = "barDiv"; div.dataset.data = JSON.stringify(obj); console.log(obj);
+function createBar(obj){ let div = cre("div","barDiv"); div.dataset.data = JSON.stringify(obj); console.log(obj);
     // TYPE RANGE
-    let main = document.createElement("div"); main.className = "barMain"; div.appendChild(main);
+    let main = cre("div","barMain"); div.appendChild(main);
     // WIDTH HEIGHT
     for (key in obj.container){main.style[key] = obj.container[key]}
     // TYPE
@@ -193,8 +193,8 @@ function createBar(obj){ let div = document.createElement("div"); div.className 
         }
     }
     // BLOCK
-    let blockDiv = document.createElement("div"); blockDiv.className = "barBlockDiv"; main.childNodes[0].after(blockDiv);
-    let block = document.createElement("div"); block.className = "barBlock"; blockDiv.appendChild(block);
+    let blockDiv = cre("div","barBlockDiv"); main.childNodes[0].after(blockDiv);
+    let block = cre("div","barBlock"); blockDiv.appendChild(block);
     let padding;
     if ("padding" in obj.tracker){padding = "(" + obj.tracker.padding + ")";}
     else {padding = 0}
@@ -242,18 +242,18 @@ function createStoryCreator(parent,obj){ let p = pd(parent);
         // MODULE {id: "idInOrder", type: "module", title: "Module", mID: "moduleID", style: []}
      */
 
-    let c = coverDiv(p); let div = document.createElement("div"); div.id = "storyCreator"; c.appendChild(div);
+    let c = coverDiv(p); let div = cre("div"); div.id = "storyCreator"; c.appendChild(div);
     let js; if (!obj){js = {order: [], id: "abcd1234"}} else {js = {order: obj.storySheet, id: obj.id}}
     div.dataset.data = JSON.stringify(js)
 
     let d = getDataset(div,"data"); div.order = getSCOrder;
 // LEFT - Hierarchy ORDER
-    let hd = document.createElement("div"); hd.id = "scHierarchy"; div.appendChild(hd);
-    let hdl = document.createElement("div"); hdl.id = "schList"; hd.appendChild(hdl); hdl.ondragover = function(){event.preventDefault()}; hdl.ondrop = scDragDrop;
+    let hd = cre("div"); hd.id = "scHierarchy"; div.appendChild(hd);
+    let hdl = cre("div"); hdl.id = "schList"; hd.appendChild(hdl); hdl.ondragover = function(){event.preventDefault()}; hdl.ondrop = scDragDrop;
     // Actual list
-    let mu = document.createElement("div"); mu.id = "schMenu"; hd.appendChild(mu);
+    let mu = cre("div"); mu.id = "schMenu"; hd.appendChild(mu);
     let tx = ic("menu"); mu.appendChild(tx);
-    let pop = document.createElement("div"); pop.id = "schmPopup"; mu.appendChild(pop);
+    let pop = cre("div"); pop.id = "schmPopup"; mu.appendChild(pop);
     let crb = coolButton("Create Story Sheet","save_as"); if (obj && obj.storySheet && obj.storySheet.length > 0){crb = coolButton("Edit Story Sheet","save_as")}
     crb.classList.add("schmpOption"); pop.appendChild(crb); crb.style = "border-radius: 0; width: 100%;";
     crb.onclick = function(){ if (obj){
@@ -261,23 +261,411 @@ function createStoryCreator(parent,obj){ let p = pd(parent);
             c.remove(); saveLS();
         }
     }}
-    let addTitle = document.createElement("div"); pop.appendChild(addTitle); addTitle.style = "border-radius: 0; width: 100%; padding: 0.5em; background-color: white; text-align: center; font-weight: bold;"; addTitle.innerText = "Add Item"
+    let addTitle = cre("div",null,"border-radius: 0; width: 100%; padding: 0.5em; background-color: white; text-align: center; font-weight: bold;"); pop.appendChild(addTitle); addTitle.innerText = "Add Item"
     let pTx = coolButton("Text","text_format"); pTx.classList.add("schmpOption"); pop.appendChild(pTx); pTx.style = "border-radius: 0; width: 100%;";
-    pTx.onclick = function(){ let it = scCreateItem("text"); hdl.appendChild(it);
-        scCreatePreview(getSCOrder(),pd("scPreview"));   }
+    pTx.onclick = function(){
+        let it = scCreateItem("text"); hdl.appendChild(it);
+        scCreatePreview(getSCOrder(),pd("scPreview"));
+    }
     let pGR = coolButton("Group","create_new_folder"); pGR.classList.add("schmpOption"); pop.appendChild(pGR); pGR.style = "border-radius: 0; width: 100%;";
-    pGR.onclick = function(){ let it = scCreateItem("group"); hdl.appendChild(it);
-        scCreatePreview(getSCOrder(),pd("scPreview"));   }
+    pGR.onclick = function(){
+        let it = scCreateItem("group"); hdl.appendChild(it);
+        scCreatePreview(getSCOrder(),pd("scPreview"));
+    }
     let pMod = coolButton("Module","extension"); pMod.classList.add("schmpOption"); pop.appendChild(pMod); pMod.style = "border-radius: 0; width: 100%;";
-    pMod.onclick = function(){ scModulePicker(c,d[1].order,hdl);   }
+    pMod.onclick = function(){
+        scModulePicker(c,d[1].order,hdl);
+    }
 // Center - PREVIEW
-    let pv = document.createElement("div"); pv.id = "scPreview"; div.appendChild(pv);
+    let pv = cre("div"); pv.id = "scPreview"; div.appendChild(pv);
 // RIGHT - Style
-    let sd = document.createElement("div"); sd.id = "scStyleList"; div.appendChild(sd);
+    let sd = cre("div"); sd.id = "scStyleList"; div.appendChild(sd);
 
     if (obj){scRefreshList(obj.storySheet);}
     return div
 }
+
+
+function createStorySheet(parent,obj){
+let c = coverDiv(pd(parent)); let div = cre("div"); div.id = "storySheet"; c.appendChild(div);
+
+let js; if (!obj){js = {order: [], id: randomUntil(4,4,storyList)}} else {js = {order: obj.storySheet, id: obj.id}};
+
+// LEFT Order
+let hd = cre("div"); hd.id = "ssHierarchy"; div.appendChild(hd);
+    let hdl = cre("div"); hdl.id = "ssList"; hd.appendChild(hdl);
+        hdl.ondragover = function(){event.preventDefault()};
+        hdl.ondrop = scDragDrop;
+    let menu = cre("div"); menu.id = "sshMenu"; hd.appendChild(menu);
+        let tx = ic("menu"); menu.appendChild(tx);
+        let pop = createSSpopup(obj);
+        menu.appendChild(pop);
+
+// CENTER Preview
+let pv = cre("div"); pv.id = "scPreview"; div.appendChild(pv);
+pv.refresh = function(data){
+    if (!data){data = div.order();}
+    scCreatePreview(data,pd("scPreview"))
+}
+// RIGHT Style Sheet
+let sd = cre("div"); sd.id = "scStyleList"; div.appendChild(sd);
+    ssStyleList()
+    // usage: elem.click = ssStyleList, pd(scStyleList).change(elem,"elem")
+
+
+// FUNCTIONS
+div.data = function(){return JSON.parse(div.dataset.data);}
+div.get = function(key){return div.data()[key]}
+div.save = function(data,key){
+    let d = div.data();
+    if (key){d[key] = data;}
+    else {d = data;}
+    div.dataset.data = JSON.stringify(d);
+}
+div.refresh = function(elem,data){elem.refresh(data)}
+div.order = function(){
+    let arr = [];
+    let hdlList = Array.from(hdl.childNodes).filter(x => x.className.includes("scModule"))
+        hdlList.map(x => arr.push(x.data()))
+    return arr
+}
+
+div.dataset.data = JSON.stringify(js)
+
+
+c.appendChild(div)
+}
+
+
+function createSSpopup(obj){
+    let pop = cre("div"); pop.id = "sshPopup";
+    let crb = coolButton("Create Story Sheet","save_as"); crb.classList.add("schmpOption");
+        crb.style = "border-radius: 0; width: 100%;";
+    if (obj && obj.storySheet && obj.storySheet.length > 0){
+        crb = coolButton("Edit Story Sheet","save_as")
+    }
+    pop.appendChild(crb);
+    crb.onclick = function(){
+        obj.storySheet = getSCOrder();
+        let ind = storyList.findIndex(x=>x.id === obj.id);
+        if (ind !== -1) {storyList[ind] = obj; pd("storySheet").parentNode.remove(); saveLS(); }
+    }
+    let addTitle = cre("div",null,"border-radius: 0; width: 100%; padding: 0.5em; background-color: white; text-align: center; font-weight: bold;"); pop.appendChild(addTitle);
+        addTitle.innerText = "Add Item"
+    let ops = [
+        {tx: "Text", ic: "text_format", func: function(){
+                let it = ssCreateItem("text"); pd("ssList").appendChild(it);
+                let order = pd("storySheet").order();
+                ssCreatePreview(order,pd("scPreview"));
+            }
+        },
+        {tx: "Group", ic: "create_new_folder", func: function(){
+                let it = ssCreateItem("group"); pd("ssList").appendChild(it);
+                let order = pd("storySheet").order();
+                ssCreatePreview(order,pd("scPreview"));
+            }
+        },
+        {tx: "Module", ic: "extension", func: function(){
+                //scModulePicker(c,d[1].order,hdl);
+            }
+        }
+    ]
+
+
+for (var i=0; i<ops.length; i++){ let oj = ops[i];
+let btn = coolButton(oj.tx,oj.ic); btn.classList.add("schmpOption"); pop.appendChild(btn); btn.style = "border-radius: 0; width: 100%";
+    btn.addEventListener("click",oj.func)
+}
+
+return pop
+}
+
+
+
+function ssStyleList(styles){
+let p = pd("scStyleList"); while (p.childNodes.length > 0){p.childNodes[0].remove();}
+
+// Text Styles
+let textPack = [
+{style: "background-color: white; display: flex", className: "packRow", childStyle: {}, children: [
+    {name: "color", type: "input", obj: { text: "Color", textStyle: "font-size: 0.7em; font-family: 'Chakra Petch'; margin-top: 0.1em; margin-left: 0.1em;",
+    type: "input-color", style: [ {type: "width", val: "2em", affect: "parent"}, {type: "height", val: "3em", affect: "child"}, {type: "padding", val: "0", affect: ["parent","child"]}, {type: "border", val: "none", affect: ["child"]}, {type: "borderBottom", val: "2px solid black", affect: "child"}, {type: "backgroundColor", val: "rgba(0,0,0,0)", affect: "child"} ], defaultVal: "#000",
+        fList: {input: function(){
+     }}
+}},
+    {name: "fontSize", type: "input", obj: {text: "Size", textStyle: "font-size: 0.7em; font-family: 'Chakra Petch'; margin-top: 0.1em;",
+    type: "input-text", style: [{type: "width", val: "3em", affect: ["parent"]}, {type: "height", val: "100%", affect: "child"}, {type: "margin", val: "0", affect: "parent"}, {type: "borderTop", val: "none", affect: "child"},{type: "fontSize", val: "0.8em", affect: "child"},{type: "borderRadius", val: 0, affect: "child"}], defaultVal: "18px",
+        fList: {keyup: function(){
+    }}
+}}, // fontSIZE
+    {name: "fontFamily", type: "input", obj: { text: "Font Family", textStyle: "font-size: 0.7em; font-family: 'Chakra Petch'; margin-top: 0.1em;",
+    type: "input-text", style: [{type: "width", val: "calc(100% - 5em)", affect: ["parent"]}, {type: "height", val: "100%", affect: "child"}, {type: "margin", val: "0", affect: "parent"}, {type: "border", val: "none", affect: "child"}, {type: "border-bottom", val: "2px solid black", affect: "child"}, {type: "fontSize", val: "0.8em", affect: "child"}], defaultVal: "Noto Sans",
+        fList: {keyup: function(){
+    }}
+}}
+    ]},
+{style: "background-color: white; border-bottom: 2px solid black; border-top: 2px solid black; display: flex; margin-top: 1em;", className: "packRow", childStyle: {}, children: [
+    {name: "BIU", type: "opsList", args: [
+        [ {icon: "format_bold", value: {fontWeight: "bold"}}, {icon: "format_italic", value: {fontStyle: "italic"}}, {icon: "format_underlined", value: {textDecoration: "underline"}}], "multi", function(){
+
+    }, "border: none; border-right: 2px solid black; width: 48%; margin: 0;", "width: 33%; font-size: 0.9em;"]
+    },
+    {name: "justify-text", type: "opsList", args: [
+        [{icon: "format_align_left", value: {justifyContent: "left"}},{icon: "format_align_center", value: {justifyContent: "center"}},{icon: "format_align_right", value: {justifyContent: "right"}}],
+    "single", function(){
+
+    }, "border: none; width: 48%; margin: 0;", "width: 33%; font-size: 0.9em;"
+    ]}
+    ]},
+{style: "background-color: white;", className: "packRow", childStyle: {}, children: [
+    {name: "align-text", type: "opsList", args: [
+    [{icon: "vertical_align_top", value: {alignItems: "left"}},{icon: "vertical_align_center", value: {alignItems: "center"}},{icon: "vertical_align_bottom", value: {alignItems: "right"}}],
+    "single", function(){
+
+    }, "width: 100%; border: none; margin-left: 0;", "width: 33%; font-size: 0.9em"
+]}
+    ]}
+]
+let p1 = createPack(textPack,styles) // TEXT STYLES
+let title1 = cre("div","slTitle"); title1.innerText = "Text Options"; p.appendChild(title1);
+p.appendChild(p1); p1.classList.add("packRowGroup");
+
+
+// Group Styles --- Child Alignment, Row Direction
+let groupPack = [
+{style: "background-color: white; display: flex", className: "packRow", childStyle: {}, children: [
+    {name: "flex", type: "opsList", args: [
+        [{icon: "table_rows", value: {flexDirection: "row", display: "flex"}},{icon: "view_week", value: {flexDirection: "column", display: "flex"}}],
+    "single", function(){
+
+    }, "border: none; border-right: 2px solid black; width: 48%; margin: 0;", "width: 50%; font-size: 0.9em;"
+            ]},
+    {name: "justifyContent", type: "opsList", args: [
+        [{icon: "format_align_left", value: {justifyContent: "left"}},{icon: "format_align_center", value: {justifyContent: "center"}},{icon: "format_align_right", value: {justifyContent: "right"}}],
+    "single", function(){
+
+    }, "border: none; width: 48%; margin: 0;", "width: 33%; font-size: 0.9em;"
+            ]}
+    ]}
+]
+let p2 = createPack(groupPack,styles) // TEXT STYLES
+let title2 = cre("div","slTitle"); title2.innerText = "Group Options"; p.appendChild(title2);
+p.appendChild(p2); p2.classList.add("packRowGroup");
+
+
+// Module Styles?
+
+// ALL Styles
+let allPack = [
+{style: "border-bottom: 2px solid black; display: flex;", className: "packRow", children: [
+    {name: "width", type: "input", obj: {
+    type: "input-text", fList: {keyup: function(){
+        console.log("WEH")
+    }}, style: [
+        {type: "width", val: "50%", affect: "parent"}, {type: "border", val: "none", affect: "child"}, {type: "border-right", val: "2px solid black", affect: "parent"}
+    ], placeholder: "Width"
+    }},
+    {name: "height", type: "input", obj: {
+    type: "input-text", fList: {keyup: function(){
+        console.log("WEH")
+    }}, style: [
+        {type: "width", val: "50%", affect: "parent"}, {type: "border", val: "none", affect: "child"}
+    ], placeholder: "Height"
+    }}
+]},
+{style: "border-bottom: 2px solid black; display: flex;", className: "packRow", children: [
+    {name: "padding", type: "input", obj: {
+    type: "input-text", fList: {keyup: function(){
+        console.log("WEH")
+    }}, style: [
+        {type: "width", val: "50%", affect: "parent"}, {type: "border", val: "none", affect: "child"}, {type: "border-right", val: "2px solid black", affect: "parent"}
+    ], placeholder: "Padding"
+    }},
+    {name: "margin", type: "input", obj: {
+    type: "input-text", fList: {keyup: function(){
+        console.log("WEH")
+    }}, style: [
+        {type: "width", val: "50%", affect: "parent"}, {type: "border", val: "none", affect: "child"}
+    ], placeholder: "Margin"
+    }}
+]},
+{style: "border-bottom: 2px solid black; display: flex;", className: "packRow", children: [
+    {name: "border", type: "input", obj: {
+    type: "input-text", fList: {keyup: function(){
+        console.log("WEH")
+    }}, style: [
+        {type: "width", val: "50%", affect: "parent"}, {type: "border", val: "none", affect: "child"}
+    ], placeholder: "Border"
+    }}
+]},
+{style: "border-bottom: 2px solid black; display: flex;", className: "packRow", children: [
+    {name: "backgroundColor", type: "input", obj: {
+        type: "input-color", style: [ {type: "width", val: "3em", affect: "parent"}, {type: "height", val: "3em", affect: "child"}, {type: "padding", val: "0", affect: ["parent","child"]}, {type: "border", val: "none", affect: ["child"]}, {type: "marginBottom", val: "0", affect: "parent"}, {type: "backgroundColor", val: "rgba(0,0,0,0)", affect: "child"} ], defaultVal: "#000",
+                fList: {input: function(){
+
+        }}, text: "Background", textStyle: "font-size: 0.6em; margin-left: 1px;"
+    }},
+    { name: "opacity", type: "input", obj: {
+        text: "Opacity", type: "input-range", style: [{type: "margin", val: "0.25em", affect: "parent"}, {type: "padding", val: 0, affect: "child"}, {type: "backgroundColor", val: "#000000", affect: "child"}, {type: "justifyContent", val: "center", affect: "parent"}, {type: "width", val: "calc(50% - 2.25em)", affect: "parent"}
+        ],
+            max: 100, min: 0, step: 1, defaultVal: "100",
+            fList: {input: function(){
+                console.log("S");
+            }}
+    }},
+    { name: "borderRadius", type: "input", obj: {
+        text: "Roundness", type: "input-range", style: [{type: "margin", val: "0.25em", affect: "parent"}, {type: "padding", val: 0, affect: "child"}, {type: "backgroundColor", val: "#000000", affect: "child"}, {type: "justifyContent", val: "center", affect: "parent"}, {type: "width", val: "calc(50% - 2.25em)", affect: "parent"}
+        ],
+            max: 50, min: 0, step: 1, defaultVal: "0",
+            fList: {input: function(){
+                console.log("S");
+            }}
+    }}
+]}
+]
+let p3 = createPack(allPack,styles) // TEXT STYLES
+let title3 = cre("div","slTitle"); title3.innerText = "Other Options"; p.appendChild(title3);
+p.appendChild(p3); p3.classList.add("packRowGroup");
+
+// FUNCTIONS
+p.styles = function(){
+    let arr = [];
+        let childs = Array.from(p.childNodes).filter(x => x.className && x.className.includes("packRow"))
+    for (var i=0; i<childs.length; i++){
+        arr.push(childs[i].list())
+    }
+return arr;
+}
+
+
+
+//p.appendChild(p3)
+}
+
+
+
+function ssCreateItem(obj){
+let order = pd("storySheet").order();
+
+
+if (typeof obj === "string"){
+    if (obj === "text"){
+    obj = {id: randomUntil(4,4,order), type: "text", title: "Text",
+        style: {
+            value: "Text"
+        }};
+    } else if (obj === "group"){
+    obj = {id: randomUntil(4,4,order), type: "group", title: "Group",
+        style: {
+
+        }, items: []};
+    }
+} else if (typeof obj === "object" && obj.type.includes("-")) { //console.log("576",obj)
+    obj = {id: randomUntil(4,4,order), type: "module", title: obj.name, mID: obj.id,
+         style: {
+
+         }}
+} else {return false}
+let iconName = "";
+if (obj.type === "text"){iconName = "text_format"}
+if (obj.type === "group"){iconName = "folder"}
+if (obj.type === "module"){iconName = "extension";}
+
+let i = cre("div","scModule"); i.dataset.data = JSON.stringify(obj);
+    i.data = function(){return JSON.parse(i.dataset.data);}
+    i.save = function(data,key){
+        if (key){
+            let js = i.data(); js[key] = data;
+            i.dataset.data = JSON.stringify(js)
+        } else {
+            i.dataset.data = JSON.stringify(data);
+        }
+    }
+    i.change = function(key,value){
+        let data = i.data(); data[key] = value;
+        i.save(data);
+    }
+
+    let icon = ic(iconName); i.appendChild(icon);
+    let inpD = document.createElement("div"); inpD.className = "scmInpDiv"; i.appendChild(inpD);
+    let ip = document.createElement("input"); i.appendChild(ip);
+    ip.onkeyup = function(){ i.change("title",ip.value); }
+    if (obj.title){ip.value = obj.title;}
+
+
+if (obj.type === "group"){i.ondblclick = function(){
+    if (i.nextSibling && i.nextSibling.className === "scmBody"){i.nextSibling.remove();}
+    else { let body = document.createElement("div"); body.className = "scmBody"; i.after(body);
+        let o = i.data(); if (o && o.items){
+        for (var x=0; x<o.items.length; x++){
+            body.appendChild(scCreateItem(o.items[x].type,o.items[x]));}
+        };
+        body.ondragover = function(){event.preventDefault()}; body.ondrop = scDragDrop; body.dataset.id = o.id;
+    }
+};
+
+
+
+
+
+i.addEventListener("click",function(){
+    console.log("click")
+    ssStyleList(i);
+    //selectDiv("scOpenItem","stay");
+    if (pd("scContextMenu") !== null){pd("scContextMenu").remove()}
+});
+
+
+/* DRAGGABLE */
+i.draggable = true; i.ondragstart = scDragStart;
+/* onContextMEnu */
+i.oncontextmenu = function(){event.preventDefault(); scContextMenu(o);}
+/* dragover */
+i.ondragover = function(){event.preventDefault()}; i.ondrop = scDragDrop;}
+return i;
+}
+
+
+
+
+function ssCreatePreview(arr,p){
+let ss = pd("storySheet");
+    while (p.childNodes.length > 0){p.childNodes[0].remove();}
+    for (var i=0; i<arr.length; i++){ let mod = arr[i]; //console.log(mod);
+        let div = document.createElement("div");
+            div.dataset.data = JSON.stringify(mod);
+            div.data = function(){return JSON.parse(div.dataset.data)}
+        if (mod.style){ for (key in mod.style){
+            if (key === "value"){div.innerText = mod.style[key]}
+            else {div.style[key] = mod.style[key]}
+        }}
+        p.appendChild(div)
+        if (mod.type === "text") { //console.log("text")
+        } else if (mod.type === "group"){ if (mod.items){
+            scCreatePreview(mod.items,div);
+            if (mod.style["item-alignment"] && mod.style["item-alignment"] === "Horizontal"){
+                div.style.display = "flex"; div.style.alignItems = "baseline";}
+        }
+
+        } else if (mod.type === "module"){ let module; let obj = modList.find(x => x.id === mod.mID);
+            if (obj.type.includes("input")){module = createInput(obj)}
+            if (obj.type.includes("dropdown")){module = createDropdown(obj)}
+            if (obj.type.includes("table")){module = createTable(obj)}
+            div.appendChild(module)
+        } else {console.log("err"); return []}
+    }
+if (ss.order().length > 0){
+    ss.save(ss.order(),"order")
+}
+}
+
+
+
+
+
+
+
+
 function scModulePicker(p,order,list){
     let c = coverDiv(p); let div = document.createElement("div"); div.id = "scModulePicker"; c.appendChild(div);
     let ti = document.createElement("div"); ti.id = "scmpTitle"; div.appendChild(ti); ti.innerText = "Select Module to Add";
@@ -305,9 +693,10 @@ function scCreateItem(type,obj){ let d = getDataset("storyCreator","data"); let 
     if (type === "group"){iconName = "folder"}
     let i = document.createElement("div"); i.dataset.data = JSON.stringify(o); i.className = "scModule";
     if (type === "module"){ iconName = "extension";}
-    if (type === "group"){i.ondblclick =function(){
+    if (type === "group"){i.ondblclick = function(){
         if (i.nextSibling && i.nextSibling.className === "scmBody"){i.nextSibling.remove();}
-        else { let body = document.createElement("div"); body.className = "scmBody"; i.after(body); let o = JSON.parse(i.dataset.data); if (o && o.items){
+        else { let body = document.createElement("div"); body.className = "scmBody"; i.after(body);
+            let o = i.data(); if (o && o.items){
             for (var x=0; x<o.items.length; x++){body.appendChild(scCreateItem(o.items[x].type,o.items[x]));}};
             body.ondragover = function(){event.preventDefault()}; body.ondrop = scDragDrop; body.dataset.id = o.id;
         }
@@ -315,9 +704,24 @@ function scCreateItem(type,obj){ let d = getDataset("storyCreator","data"); let 
     let icon = ic(iconName); i.appendChild(icon);
     let inpD = document.createElement("div"); inpD.className = "scmInpDiv"; i.appendChild(inpD);
     let ip = document.createElement("input"); i.appendChild(ip);
-    ip.onkeyup = function(){let newTitle = ip.value; let dd = getDataset(i,"data"); dd[1].title = ip.value; dd[0].dataset.data = JSON.stringify(dd[1]);}
-    if (o.title){ip.value = o.title;}
-    i.addEventListener("click",function(){ scCreateStyleList(i); selectDiv("scOpenItem","stay"); if (document.getElementById("scContextMenu") !== null){pd("scContextMenu").remove()}});
+    ip.onkeyup = function(){ i.change("title",ip.value); }
+    if (o && o.title){ip.value = o.title;}
+    i.data = function(){return this.dataset.data;}
+    i.save = function(data,key){
+        if (key){i.dataset[key] = JSON.stringify(data); return}
+        i.dataset.data = JSON.stringify(data);
+        }
+    i.change = function(key,value){
+        let data = i.data(); data[key] = value;
+        i.save(data);
+    }
+
+
+    i.addEventListener("click",function(){
+        scCreateStyleList(i);
+        selectDiv("scOpenItem","stay");
+        if (pd("scContextMenu") !== null){pd("scContextMenu").remove()}
+    });
     /* DRAGGABLE */
     i.draggable = true; i.ondragstart = scDragStart;
     /* onContextMEnu */
@@ -651,8 +1055,8 @@ function getSHstyleList(){ let list = {};
 
 
 // ALL
-    if (document.getElementById("shNormalOptions") !== null){
-        list = document.getElementById("shNormalOptions").list()
+    if (pd("shNormalOptions") !== null){
+        list = pd("shNormalOptions").list()
     }
     else {
         let wd = pd("shWidth"); if (wd !== null && wd.value.length > 0){list["width"] = wd.value}

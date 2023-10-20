@@ -1,6 +1,6 @@
 createHomePage("content")
 //createStoryManager("content")
-createModuleCreator("content");
+//createModuleCreator("content");
 //document.getElementsByClassName("cell")[5].oncontextmenu()
 
 //createModuleManager("content")
@@ -11,18 +11,19 @@ sheetCreator("content")
 pd("shList").appendChild(shCreateItem("text")).click();
 shRefreshList(getSHOrder())
 */
-    // mainStoryCreator("content");
+    //mainStoryCreator("content");
 /*
+createStoryCreator("content")
     let item = scCreateItem("text");
     pd("schList").appendChild(item); //item.onclick()
     let item2 = scCreateItem("group");
     pd("schList").appendChild(item2); //item2.onclick()
     let item2a = scCreateItem("group");
-    pd("schList").appendChild(item2a); //item2.onclick()
+    pd("schList").appendChild(item2a); //item2a.click()
     //pd("schmPopup").childNodes[2].click()
-    let item3 = scCreateItem("module",modList[1]);
-    pd("schList").appendChild(item3); //item2.onclick()
 */
+createStorySheet("content")
+pd("sshPopup").childNodes[2].click()
 
 
 /*

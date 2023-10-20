@@ -310,26 +310,31 @@ function createPreview(p,obj){ while (p.childNodes.length > 0){p.childNodes[0].r
 }
 
 
-function mccbPopup(obj){ let c = coverDiv(document.getElementById("content"));
-    let id = document.getElementById("moduleCreator").dataset.id; if (id){obj.id = id;}
+function mccbPopup(obj){ let c = coverDiv(pd("content"));
+    let id = pd("moduleCreator").dataset.id; if (id){obj.id = id;}
 
-    let d = document.createElement("div"); d.id = "mccbPopup"; c.appendChild(d);
-    let prev = document.createElement("div"); prev.id = "mccbpPrev"; d.appendChild(prev);
+    let d = cre("div"); d.id = "mccbPopup"; c.appendChild(d);
+    let prev = cre("div"); prev.id = "mccbpPrev"; d.appendChild(prev);
     createPreview(prev,obj);
-    let bot = document.createElement("div"); bot.id = "mccbpBot"; d.appendChild(bot);
-    let tx = document.createElement("div"); tx.id = "mccpbText";
+
+    let bot = cre("div"); bot.id = "mccbpBot"; d.appendChild(bot);
+    let tx = cre("div"); tx.id = "mccpbText";
     tx.innerText = "[" + obj.name + "] \nwas created!"; bot.appendChild(tx);
-    if (obj.id){tx.innerText = "[" + obj.name + "] \nwas edited!";}
-    let btnl = document.createElement("div"); btnl.id = "mccpbBList"; bot.appendChild(btnl);
+        if (obj.id){tx.innerText = "[" + obj.name + "] \nwas edited!";}
+
+    let btnl = cre("div"); btnl.id = "mccpbBList"; bot.appendChild(btnl);
     let b1 = coolButton("Create New Mod","add_circle"); btnl.appendChild(b1);
-    b1.onclick = function(){c.remove(); document.getElementById("moduleCreator").parentNode.remove(); createModuleCreator("content")}
+    b1.onclick = function(){c.remove(); pd("moduleCreator").parentNode.remove(); createModuleCreator("content")}
+
     let b2 = coolButton("Go to List","list"); btnl.appendChild(b2);
-    b2.onclick = function(){c.remove(); document.getElementById("moduleCreator").parentNode.remove(); createModuleManager("content")}
+    b2.onclick = function(){c.remove(); pd("moduleCreator").parentNode.remove(); createModuleManager("content")}
+
     let b3 = coolButton("Close","list"); btnl.appendChild(b3);
     b3.onclick = function(){c.remove();}
+
     if (obj.id){let ind = modList.findIndex(x => x.id === obj.id); modList[ind] = obj; saveLS();}
     else {obj.id = randomUntil(5,5,modList);console.log(obj); modList.push(obj); saveLS();}
-    if (document.getElementById("mmBotDiv") !== null){document.getElementById("mmBotDiv").refresh();}
+    if (pd("mmBotDiv") !== null){pd("mmBotDiv").refresh();}
 }
 
 
@@ -348,7 +353,6 @@ function createPackRow(obj,styleObj){
             array.push([child.name,c]);
             if (styleObj && c.options){ let sarr = {}; let op = c.options();
                 for (var x=0; x<op.length; x++){ let st = op[x]; if (styleObj[st]){sarr[st] = styleObj[st]}}; c.refresh(sarr);}
-
         }
         else if (child.type.includes("input")){c = createInput(child.obj);
             array.push([child.name,c]);
@@ -383,16 +387,25 @@ function createPackRow(obj,styleObj){
                 if (mr.dataset.name !== undefined){
                 mr.select(styleList[mr.dataset.name])}
                     else {console.log("--",mr)}
-            }else {console.log("?")}
+            } else {console.log("?")}
+        }
+    }
+    m.addListener = function(type,func){
+        for (var x=0; x<m.childNodes.length; x++){ let mr = m.childNodes[x];
+            if (mr.classList.contains("opDiv")){
+                mr.addListener(type,func)
+            }
+            else if (mr.classList.contains("inputContainer")){
+                mr.inputElem.addEventListener(type,func)
+            }  else if (mr.classList.contains("dropdownContainer")) {
+                mr.addListener(type,func)
+            } else {console.log("?")}
         }
     }
 
     return m
 }
 function createPack(arr,styleObj){ // obj = [{row1}, ]
-console.log(arr,styleObj)
-
-
     let txld = cre("div",undefined,"display: flex; flex-direction: column;");
     let so = {}; // if (styleObj){so = styleObj} <--FIX THIS -->
     if (styleObj){so = styleObj}

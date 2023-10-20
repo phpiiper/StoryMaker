@@ -207,7 +207,17 @@ let ct = cre("div","dropdownContainer"); ct.dataset.data = JSON.stringify(obj);
                     //console.log(selectedDiv);
                 return selectedDiv }
     }
-    ct.options = div.options; ct.listElem = div.listElem; ct.list = div.list; ct.inputElem = div.inputElem; ct.input = div.input; ct.sort = div.sort; ct.select = div.select;
+    div.addListener = function(type,func){
+        // add listener for ALL options
+        /* TOP and BOT */
+        for (var i=0; i<top.childNodes.length; i++){
+            console.log(i)
+        }
+        console.log(top)
+        console.log(bot)
+    }
+
+    ct.options = div.options; ct.listElem = div.listElem; ct.list = div.list; ct.inputElem = div.inputElem; ct.input = div.input; ct.sort = div.sort; ct.select = div.select; ct.addListener = div.addListener;
 
     if (obj.id) {div.id = obj.id;}
 
@@ -227,7 +237,10 @@ let ct = cre("div","dropdownContainer"); ct.dataset.data = JSON.stringify(obj);
         }
     }
     // key TEXT exists
-    if (obj.text) {let tx = cre("span"); ct.appendChild(tx); tx.innerText = obj.text;}
+    if (obj.text) {
+        let tx = cre("span"); ct.appendChild(tx); tx.innerText = obj.text;
+        if ("textStyle" in obj){tx.style = obj.textStyle}
+    }
     // if value exists
     if (obj.defaultVal || obj.value){
         if (obj.defaultVal){ct.select(obj.defaultVal)}
@@ -247,7 +260,9 @@ function createInput(obj){
         if (inp.parentNode.parentNode.id !== "mcPreviewMod" && document.getElementById("moduleCreator") !== null){
             saveDataset("moduleCreator","data",getModOptions());}})
     if ("fList" in obj){for (key in obj.fList){inp.addEventListener(key,obj.fList[key])}}
-    if ("text" in obj){let sp = document.createElement("span"); sp.innerText = obj.text; inpD.appendChild(sp); }
+    if ("text" in obj){let sp = document.createElement("span"); sp.innerText = obj.text; inpD.appendChild(sp);
+        if ("textStyle" in obj){sp.style = obj.textStyle}
+    }
     if (obj.id){inp.id = obj.id;}
     if (obj.resize){inp.style.resize = obj.resize;}
     if (obj.min){inp.min = obj.min;}
@@ -351,7 +366,6 @@ expB.onclick = function(){
 }
 // STYLES //
 if (obj.style && obj.style.length > 0){
-    console.log(obj.style)
     for (var i=0;i<obj.style.length; i++) {
      let st = obj.style[i];
         // affect parent
@@ -605,7 +619,7 @@ let op = cre("div","opdOp"); opd.appendChild(op); let a = arr[i]
                 for (var x=0; x<opd.childNodes.length; x++){
                     opd.childNodes[x].classList.remove("selected");
                     };
-                console.log(op)
+                //console.log(op)
                 op.classList.add("selected");};
         }; opd.dataset.data = JSON.stringify(c);
            // console.log(c)
@@ -621,14 +635,24 @@ let op = cre("div","opdOp"); opd.appendChild(op); let a = arr[i]
     }
     opd.refresh = function(ops){ let d = getDataset(opd,"data"); d[1] = ops; d[0].dataset.data = JSON.stringify(d[1]);
         for (var i=0; i<opd.childNodes.length; i++){ let oc = opd.childNodes[i];
-            if (Object.keys(d[1]).includes(Object.keys(JSON.parse(oc.dataset.data))[0])){oc.classList.add("selected")} else {oc.classList.remove("selected")}
+        if (JSON.stringify(d[1]) === JSON.stringify(oc.data().value)){oc.classList.add("selected"); console.log("HUH")
+        } else {oc.classList.remove("selected")}
         }
-    }; opd.getValue = function(){
+       // console.log(ops)
+    };
+    opd.getValue = function(){
         let ob = {};
         for (var i=0; i<opd.childNodes.length; i++){
-            if (opd.childNodes[i].classList.contains("selected")){let dp = JSON.parse(opd.childNodes[i].dataset.data); for (key in dp){ob[key] = dp[key];}}
+            if (opd.childNodes[i].classList.contains("selected")){
+                let dp = JSON.parse(opd.childNodes[i].dataset.data); for (key in dp){ob[key] = dp[key];}
+            }
         }
         return ob;
+    }
+    opd.addListener = function(type,func){
+        for (var i=0; i<opd.childNodes.length; i++){
+            opd.childNodes[i].addEventListener(type,func)
+        }
     }
 
     return opd
