@@ -309,7 +309,7 @@ pv.refresh = function(data){
 }
 // RIGHT Style Sheet
 let sd = cre("div"); sd.id = "scStyleList"; div.appendChild(sd);
-    ssStyleList()
+    //ssStyleList()
     // usage: elem.click = ssStyleList, pd(scStyleList).change(elem,"elem")
 
 
@@ -382,10 +382,14 @@ return pop
 
 
 
-function ssStyleList(styles){
+function ssStyleList(elem){ //console.log(elem)
 let p = pd("scStyleList"); while (p.childNodes.length > 0){p.childNodes[0].remove();}
+    p.item = elem;
+let obj = elem.data()
+let styles = obj.styles
 
 // Text Styles
+    if (obj.type.includes("text")){
 let textPack = [
 {style: "background-color: white; display: flex", className: "packRow", childStyle: {}, children: [
     {name: "color", type: "input", obj: { text: "Color", textStyle: "font-size: 0.7em; font-family: 'Chakra Petch'; margin-top: 0.1em; margin-left: 0.1em;",
@@ -429,9 +433,10 @@ let textPack = [
 let p1 = createPack(textPack,styles) // TEXT STYLES
 let title1 = cre("div","slTitle"); title1.innerText = "Text Options"; p.appendChild(title1);
 p.appendChild(p1); p1.classList.add("packRowGroup");
-
+}
 
 // Group Styles --- Child Alignment, Row Direction
+    if (obj.type.includes("group")){
 let groupPack = [
 {style: "background-color: white; display: flex", className: "packRow", childStyle: {}, children: [
     {name: "flex", type: "opsList", args: [
@@ -451,6 +456,7 @@ let groupPack = [
 let p2 = createPack(groupPack,styles) // TEXT STYLES
 let title2 = cre("div","slTitle"); title2.innerText = "Group Options"; p.appendChild(title2);
 p.appendChild(p2); p2.classList.add("packRowGroup");
+    }
 
 
 // Module Styles?
@@ -503,7 +509,7 @@ let allPack = [
         type: "input-color", style: [ {type: "width", val: "3em", affect: "parent"}, {type: "height", val: "3em", affect: "child"}, {type: "padding", val: "0", affect: ["parent","child"]}, {type: "border", val: "none", affect: ["child"]}, {type: "marginBottom", val: "0", affect: "parent"}, {type: "backgroundColor", val: "rgba(0,0,0,0)", affect: "child"} ], defaultVal: "#000",
                 fList: {input: function(){
 
-        }}, text: "Background", textStyle: "font-size: 0.6em; margin-left: 1px;"
+        }}, text: "Background", textStyle: "font-size: 0.6em; margin-left: 1px;", defaultVal: "#ffffff"
     }},
     { name: "opacity", type: "input", obj: {
         text: "Opacity", type: "input-range", style: [{type: "margin", val: "0.25em", affect: "parent"}, {type: "padding", val: 0, affect: "child"}, {type: "backgroundColor", val: "#000000", affect: "child"}, {type: "justifyContent", val: "center", affect: "parent"}, {type: "width", val: "calc(50% - 2.25em)", affect: "parent"}
@@ -547,7 +553,6 @@ return arr;
 function ssCreateItem(obj){
 let order = pd("storySheet").order();
 
-
 if (typeof obj === "string"){
     if (obj === "text"){
     obj = {id: randomUntil(4,4,order), type: "text", title: "Text",
@@ -566,6 +571,7 @@ if (typeof obj === "string"){
 
          }}
 } else {return false}
+
 let iconName = "";
 if (obj.type === "text"){iconName = "text_format"}
 if (obj.type === "group"){iconName = "folder"}
@@ -602,7 +608,7 @@ if (obj.type === "group"){i.ondblclick = function(){
         };
         body.ondragover = function(){event.preventDefault()}; body.ondrop = scDragDrop; body.dataset.id = o.id;
     }
-};
+} }
 
 
 
@@ -614,14 +620,16 @@ i.addEventListener("click",function(){
     //selectDiv("scOpenItem","stay");
     if (pd("scContextMenu") !== null){pd("scContextMenu").remove()}
 });
-
+console.log(i)
 
 /* DRAGGABLE */
 i.draggable = true; i.ondragstart = scDragStart;
 /* onContextMEnu */
 i.oncontextmenu = function(){event.preventDefault(); scContextMenu(o);}
 /* dragover */
-i.ondragover = function(){event.preventDefault()}; i.ondrop = scDragDrop;}
+i.ondragover = function(){event.preventDefault()}; i.ondrop = scDragDrop;
+
+
 return i;
 }
 

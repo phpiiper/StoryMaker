@@ -24,6 +24,7 @@ createStoryCreator("content")
 */
 createStorySheet("content")
 pd("sshPopup").childNodes[2].click()
+pd("ssList").childNodes[0].click()
 
 
 /*
