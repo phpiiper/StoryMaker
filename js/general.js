@@ -72,10 +72,7 @@ function deleteItem(pID,iID,list){
     else{
         let parent_id_loc = get_index("id",ids[0],list,"items")
         let parent_insides = get_insides(parent_id_loc,list)
-        let array = []
-        for (var i=0; i<parent_insides.length; i++){
-            if (parent_insides[i].id != ids[1]) {array.push(parent_insides[i])}
-        }
+        let array = parent_insides.filter(x => x.id !== ids[1]);
         //console.log("259",parent_id_loc,parent_insides,array)
         //console.log(parent_id_loc); console.log(get_item(parent_id_loc,list))
         let parent = get_item(parent_id_loc,list);
@@ -92,26 +89,28 @@ function addItem(pID,obj,list){ //parent id, note id
     return m
 }
 function get_index(key,text,array,parentKey){
-    var list; var found = false;
-    get_index_formula(key,text,array,[])
+var list; var found = false;
+get_index_formula(key,text,array,[])
     /*
-    Use: Loops through entire "text_list", keeping track of the location being searched through (index) until key matches. Returns array
+    Use: Loops through entire array[], keeping track of the location being searched through (index) until key matches. Returns array
     */
-    function get_index_formula(key,text,array,index){
-        for (var i=0; i<array.length; i++){
-            if (key in array[i] && array[i][key] === text) {var new_ind = index; new_ind.push(i); list = new_ind; found = true; return}
-        } //searches first in array if it exists
+function get_index_formula(key,text,array,index){
+for (var i=0; i<array.length; i++){
+    if (key in array[i] && array[i][key] === text) {
+        var new_ind = index; new_ind.push(i);
+        list = new_ind; found = true; return}
+} //searches first in array if it exists
 
 //then, looks inside folders of the array if nothing is returned
-        for (var i=0; i<array.length; i++){
-            if (parentKey in array[i] && array[i][parentKey].length > 0 && !found) {
+for (var i=0; i<array.length; i++){
+    if (parentKey in array[i] && array[i][parentKey].length > 0 && !found) {
 // looking through folders with "texts" inside
-                var child_nodes = array[i][parentKey]
-                var new_ind = index; new_ind.push(i); // this is how index is tracked, and then reported if it matches in the above loop
-                get_index_formula(key,text,child_nodes,new_ind)
-                // continues the loop to look through each groups insides
-            }
-        }}
+    var child_nodes = array[i][parentKey]
+    var new_ind = index; new_ind.push(i); // this is how index is tracked, and then reported if it matches in the above loop
+    get_index_formula(key,text,child_nodes,new_ind)
+    // continues the loop to look through each groups insides
+    }}
+}
 
 // then this returns an array which have the indexes of the array:
 // example [1,0] would be array[1].items[0]
@@ -126,7 +125,9 @@ function get_index(key,text,array,parentKey){
 function get_insides(location,list,parentKey){
     var li = list; for (var i=0; i<location.length;i++){
         if (li[location[i]] !== undefined && parentKey in li[location[i]]) {li = li[location[i]][parentKey]}
-        else {li = li[location[i]]}     }; return li; }
+        else {li = li[location[i]]}     };
+        if (li.items){return li.items}
+        return li; }
 function get_item(location,list,parentKey){
     var li = list;  for (var i=0; i<location.length;i++){
         if (li[location[i]] !== undefined && parentKey in li[location[i]]) {
@@ -136,9 +137,14 @@ function get_item(location,list,parentKey){
 
 
 function save_item(id,newObj,list,parentKey){
-    let p = get_index("id",id,list,parentKey); p.pop();
-    let parent = get_insides(p,list); itemInd = parent.findIndex(x => x.id === id);
-    parent[itemInd] = newObj
+    let folder = get_index("id",id,list,parentKey);
+    let item = folder.pop();
+if (folder.length === 0){
+    list[item] = newObj
+} else {// main
+    let t = get_item(folder, list, "items")
+    t.items[item] = newObj;
+}
     return list
 }
 

@@ -1,6 +1,13 @@
 createHomePage("content")
+//createGuideDiv("content").article("story_sheet")
+
+//pd("hpButtonList").childNodes[2].click()
+//div.article("creating_module")
+
+
 //createStoryManager("content")
 //createModuleCreator("content");
+//pd("mcGuideBtn").click()
 //document.getElementsByClassName("cell")[5].oncontextmenu()
 
 //createModuleManager("content")
@@ -22,11 +29,54 @@ createStoryCreator("content")
     pd("schList").appendChild(item2a); //item2a.click()
     //pd("schmPopup").childNodes[2].click()
 */
+/*
 createStorySheet("content")
-pd("sshPopup").childNodes[2].click()
-pd("ssList").childNodes[0].click()
+// ITEM //
+//pd("sshPopup").childNodes[2].click()
+//pd("ssList").childNodes[0].click()
 
 
+// GROUP //
+//pd("sshPopup").childNodes[3].click()
+//pd("ssList").childNodes[0].click()
+pd("storySheet").save([
+    {
+        "id": "1578VOGW",
+        "type": "group",
+        "title": "Group",
+        "style": {
+            "width": "200px",
+            "height": "300px",
+            "padding": "1em",
+            "margin": "1em",
+            "border": "0.25em dotted white",
+            "backgroundColor": "#fe9595",
+            "opacity": "100",
+            "borderRadius": "62.5"
+        },
+        "items": []
+    },
+    {
+        "id": "4445IONA",
+        "type": "text",
+        "title": "Text",
+        "style": {
+            "value": "Text",
+            "color": "#000000",
+            "fontSize": "18px",
+            "fontFamily": "Noto Sans",
+            "justifyContent": "left",
+            "alignItems": "center",
+            "backgroundColor": "#ffffff",
+            "opacity": "100",
+            "borderRadius": "0"
+        }
+    }
+],"order")
+pd("ssList").refresh()
+pd("ssList").childNodes[1].click()
+
+*/
 /*
 let order = [
     {"id": "3731ZSBY","type": "text", "title": "Text", "style": {"value": "Text"}},
@@ -39,22 +89,4 @@ for (var i=0; i<order.length; i++){pd("schList").appendChild(scCreateItem(order[
 scCreatePreview(getSCOrder(),pd("scPreview"))
  */
 
-/*
-t.onmousedown = function(){
-    // moving
-    let x = event.clientX; let y = event.clientY;
-    document.onmousemove = function(){ event.preventDefault(); let evt = n;
-        // length of note container
-        let width = evt.parentNode.scrollWidth;
-        evt.style.top = (evt.offsetTop - (y - event.clientY)) + "px"; evt.style.left = (evt.offsetLeft  - (x - event.clientX)) + "px"; x = event.clientX; y = event.clientY;
-        if (evt.style.left.split("px")[0] < 0){evt.style.left = "0px"}
-        if (evt.style.top.split("px")[0] < 0){evt.style.top = "0px"}
-        // if scrolling
-        if (document.getElementById("noteList").getBoundingClientRect().width < event.clientX + 150){ document.getElementById("noteList").scrollLeft += 20;}
-        if (document.getElementById("noteList").getBoundingClientRect().height < event.clientY + 150){ document.getElementById("noteList").scrollTop += 20;}
-        let nt = notesList.find(x => x.id === evt.dataset.id);
-        nt.location = [JSON.parse(evt.style.left.replace("px","")),JSON.parse(evt.style.top.replace("px",""))]
-    }
-}
 
- */

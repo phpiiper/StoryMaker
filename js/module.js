@@ -15,6 +15,10 @@ function createModuleCreator(parent,obj){ //console.log("350",obj)
 
     let nObj = inpList.find(x => x.id === "mcName"); let name = createInput(nObj); lbl.appendChild(name);
 
+    // GUIDE BUTTON
+    let gb = createInput(inpList.find(x => x.id === "mcGuideBtn")); lbl.appendChild(gb);
+        gb.style.margin = "1rem 0 0.25rem";
+
     if (obj && obj.id){console.log("EDIT")
         let eObj = inpList.find(x => x.id === "mcCreateBtn"); eObj.value = "Edit Module";
         let erBtn = createInput(eObj); lbl.appendChild(erBtn);
@@ -207,7 +211,7 @@ function createCell(p,cObject){
 
 function addStyleList(p,type){
 let d = pd("mcRightDiv").data();
-console.log(d)
+//console.log(d)
 let list = mlStyles;
     // console.log("-",p,type); console.log(d[1][type])
 while (p.childNodes.length > 0){p.childNodes[0].remove();}
@@ -249,27 +253,31 @@ if (t[0] === "input"){ // placeholder, default value, range/num: max,min,step
     if (t[1] === "color"){rowL.children = rowL.children.filter(x => x.name !== "placeholder")}
     if (t[1] === "textarea"){
         rowL.children.push({name: "resize", type: "dropdown", obj: {
+        type: "dropdown-static",
         text: "Resize", ops: ["Both","Horizontal","Vertical","None"], defaultVal: "Both", fList: {click: function(){getModOptions()}}, style: []
         }})
+        console.log(rowL)
     }
     if (t[1] === "range" || t[1] === "number"){
         rowL.children.push({name: "max", type: "input", obj: inpList.find(x => x.id === "mcMax")})
         rowL.children.push({name: "min", type: "input", obj: inpList.find(x => x.id === "mcMin")})
-    if (t[1] === "range"){ rowL.children.push({name: "step", type: "input", obj: inpList.find(x => x.id === "mcStep")}) }
+    if (t[1] === "range"){
+        rowL.children.push({name: "step", type: "input", obj: inpList.find(x => x.id === "mcStep")})
+        rowL.children = rowL.children.filter(x => x.name !== "placeholder")
+        }
     }
 
         let pack = createPackRow(rowL,objStyle); p.appendChild(pack)
 } else if (t[0] === "dropdown"){ // options
     let op = createDropdown(dpList.find(x => x.id === "mcOptions")); p.appendChild(op)
 } else if (t[0] === "table"){ // table
-let rowT = { style: "display: flex; width: 100%", className: "packRow", childStyle: {}, children: [
-        {name: "row", type: "input", obj: inpList.find(x => x.id === "mcRows")},
-        {name: "col", type: "input", obj: inpList.find(x => x.id === "mcCols")}
-    ] };
-        if (t[1] === "expandable"){
-            rowT.children.push({name: "expandable", type: "dropdown", obj: dpList.find(x => x.id === "mctExpandable")})
-        }
-let packT = createPackRow(rowT,objStyle); p.appendChild(packT)
+let rws = inpList.find(x => x.id === "mcRows");
+let cls = inpList.find(x => x.id === "mcCols");
+p.appendChild(createInput(rws)); p.appendChild(createInput(cls));
+if (t[1] === "expandable"){
+    p.appendChild(createDropdown(dpList.find(x => x.id === "mctExpandable")))
+}
+
     let tbd = document.createElement("div"); tbd.id = "mcTableOptionsDiv"; p.appendChild(tbd);
     let titleStyle = {
         type: "Title", value: "Title",
@@ -290,7 +298,8 @@ let packT = createPackRow(rowT,objStyle); p.appendChild(packT)
     //let tbdOP = cre("div"); tbdOP.id = "mcTOODiv"; tbd.appendChild(tbdOP)
 
 
-    } else {console.log("err")}
+} // table
+else {console.log("err")}
 }
 
 
@@ -332,10 +341,19 @@ function mccbPopup(obj){ let c = coverDiv(pd("content"));
     let b3 = coolButton("Close","list"); btnl.appendChild(b3);
     b3.onclick = function(){c.remove();}
 
-    if (obj.id){let ind = modList.findIndex(x => x.id === obj.id); modList[ind] = obj; saveLS();}
-    else {obj.id = randomUntil(5,5,modList);console.log(obj); modList.push(obj); saveLS();}
-    if (pd("mmBotDiv") !== null){pd("mmBotDiv").refresh();}
+    if (obj.id){
+        let ind = modList.findIndex(x => x.id === obj.id);
+        modList[ind] = obj; saveLS();
+    }
+    else {
+        obj.id = randomUntil(5,5,modList);
+        console.log(obj); modList.push(obj); saveLS();
+    }
+    if (pd("moduleManager") !== null){pd("moduleManager").refresh();}
 }
+
+
+
 
 
 function createPackRow(obj,styleObj){
@@ -369,7 +387,7 @@ function createPackRow(obj,styleObj){
     m.list = function(){let r = {};
         for (var i=0; i<array.length; i++){ let at = array[i];
             if (at[1].classList.contains("inputContainer")){
-                r[at[0]] = at[1].getVal()
+                if (at[1].getVal().length > 0){r[at[0]] = at[1].getVal();}
             } else if (at[1].classList.contains("opDiv")){
                 let lis = at[1].getValue(); for (key in lis){r[key] = lis[key]}
             } else if (at[1].classList.contains("dropdownContainer")){
@@ -414,5 +432,12 @@ function createPack(arr,styleObj){ // obj = [{row1}, ]
         let slist = txld.childNodes[i].list();
         for (key in slist){list[key] = slist[key];}
     }; return list;}
+
+
+txld.addListener = function(type,func){
+for (var i=0;i<txld.childNodes.length; i++){
+    txld.childNodes[i].addListener(type,func)
+}}
+
     return txld
 }

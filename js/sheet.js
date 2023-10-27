@@ -1,4 +1,5 @@
 /* DRAG DROP */
+/*
 function scDragStart(){
     // SELECT THIS
     let s = document.getElementById("selectedSCModule"); if (s !== null){s.id = ""}
@@ -33,6 +34,35 @@ function scMoveItem(order,loc,obj){
     let target = "MAIN"; if (loc.length > 0 && loc !== "MAIN") {target = get_item(loc,order).id;}
     order = addItem(target,moveItem,order)
     return order
+}
+*/
+
+function modDragStart(){
+    let drag = event.currentTarget;
+    drag.id = "selectedItem"
+}
+function modDragDrop(){
+let target = event.target;
+    if (target === null || target.parentNode === null){return}
+while (target !== null && target.parentNode !== null && target.id !== "ssList" && !target.parentNode.classList.contains("coverDiv") && target.parentNode.id !== "ssList"){target = target.parentNode};
+
+if (target === null || pd("selectedItem") === null || target.id === "selectedItem" || !target.data().items){return}
+
+let drag = pd("selectedItem"); let dd = drag.data(); let dl = drag.loc();
+    let dpL = dl.slice(0,-1);
+    let td = target.data(); let tl = target.loc();
+
+let o = pd("storySheet").order();
+if (dpL.length === 0){
+    dpL = "MAIN"
+} else {
+    dpL = get_item(dpL,o,"id").id;
+}
+
+o = deleteItem(dpL,dd.id,o); o = addItem(td.id,dd,o)
+
+pd("storySheet").save(o,"order"); pd("ssList").refresh()
+target = null;
 }
 
 
@@ -295,7 +325,13 @@ let js; if (!obj){js = {order: [], id: randomUntil(4,4,storyList)}} else {js = {
 let hd = cre("div"); hd.id = "ssHierarchy"; div.appendChild(hd);
     let hdl = cre("div"); hdl.id = "ssList"; hd.appendChild(hdl);
         hdl.ondragover = function(){event.preventDefault()};
-        hdl.ondrop = scDragDrop;
+        hdl.ondrop = modDragDrop;
+        hdl.refresh = function(ord){
+            let order = div.data().order; if (ord) {order = ord;}
+            while (hdl.childNodes.length > 0){hdl.childNodes[0].remove();}
+            for (var i=0; i<order.length; i++) { hdl.appendChild(ssCreateItem(order[i])); }
+            pv.refresh();
+        }
     let menu = cre("div"); menu.id = "sshMenu"; hd.appendChild(menu);
         let tx = ic("menu"); menu.appendChild(tx);
         let pop = createSSpopup(obj);
@@ -303,9 +339,9 @@ let hd = cre("div"); hd.id = "ssHierarchy"; div.appendChild(hd);
 
 // CENTER Preview
 let pv = cre("div"); pv.id = "scPreview"; div.appendChild(pv);
-pv.refresh = function(data){
+pv.refresh = function(data,loc){
     if (!data){data = div.order();}
-    scCreatePreview(data,pd("scPreview"))
+    ssCreatePreview(data,pd("scPreview"),loc)
 }
 // RIGHT Style Sheet
 let sd = cre("div"); sd.id = "scStyleList"; div.appendChild(sd);
@@ -322,10 +358,12 @@ div.save = function(data,key){
     else {d = data;}
     div.dataset.data = JSON.stringify(d);
 }
-div.refresh = function(elem,data){elem.refresh(data)}
+div.refresh = function(elem,data){
+    elem.refresh(data)
+}
 div.order = function(){
     let arr = [];
-    let hdlList = Array.from(hdl.childNodes).filter(x => x.className.includes("scModule"))
+    let hdlList = Array.from(hdl.childNodes).filter(x => x.className.includes("ssModule"))
         hdlList.map(x => arr.push(x.data()))
     return arr
 }
@@ -346,27 +384,27 @@ function createSSpopup(obj){
     }
     pop.appendChild(crb);
     crb.onclick = function(){
-        obj.storySheet = getSCOrder();
+        obj.storySheet = pd("storySheet").order();
         let ind = storyList.findIndex(x=>x.id === obj.id);
-        if (ind !== -1) {storyList[ind] = obj; pd("storySheet").parentNode.remove(); saveLS(); }
+        if (ind !== -1) {
+            storyList[ind] = obj; pd("storySheet").parentNode.remove(); saveLS();
+        }
     }
     let addTitle = cre("div",null,"border-radius: 0; width: 100%; padding: 0.5em; background-color: white; text-align: center; font-weight: bold;"); pop.appendChild(addTitle);
         addTitle.innerText = "Add Item"
     let ops = [
         {tx: "Text", ic: "text_format", func: function(){
-                let it = ssCreateItem("text"); pd("ssList").appendChild(it);
-                let order = pd("storySheet").order();
-                ssCreatePreview(order,pd("scPreview"));
+            pd("ssList").appendChild(ssCreateItem("text"));
+            ssCreatePreview(pd("storySheet").order(),pd("scPreview"));
             }
         },
         {tx: "Group", ic: "create_new_folder", func: function(){
-                let it = ssCreateItem("group"); pd("ssList").appendChild(it);
-                let order = pd("storySheet").order();
-                ssCreatePreview(order,pd("scPreview"));
+            pd("ssList").appendChild(ssCreateItem("group"));
+            ssCreatePreview(pd("storySheet").order(),pd("scPreview"));
             }
         },
         {tx: "Module", ic: "extension", func: function(){
-                //scModulePicker(c,d[1].order,hdl);
+                ssModulePicker(c,pd("storySheet").order())
             }
         }
     ]
@@ -386,76 +424,64 @@ function ssStyleList(elem){ //console.log(elem)
 let p = pd("scStyleList"); while (p.childNodes.length > 0){p.childNodes[0].remove();}
     p.item = elem;
 let obj = elem.data()
-let styles = obj.styles
+let styles = obj.style
 
+// FUNCTIONS
+    p.styles = function(){
+        let arr = [];
+        let childs = Array.from(p.childNodes).filter(x => x.className && x.className.includes("packRow"))
+        for (var i=0; i<childs.length; i++){
+            arr.push(childs[i].list())
+        }
+        return arr;
+    }
+    p.combine = function(styleArr){
+        let obj = {};
+        for (var i=0; i<styleArr.length; i++){
+            let sa = styleArr[i];
+            for (key in sa){obj[key] = sa[key]}
+        }
+        return obj
+    }
+    p.combineStyles = function(){return this.combine(p.styles());}
+    p.changeStyle = function(){
+        let sty = p.combineStyles();
+        let newItem = p.item.data(); newItem.style = sty;
+        let o = pd("storySheet").order();
+            let itemLoc = get_index("id",newItem.id,o,"items")
+            o = save_item(newItem.id,newItem,o,"items");
+            pd("ssList").refresh(o);
+
+            ssCreatePreview(pd("storySheet").order(),pd("scPreview"),itemLoc);
+    } // onkeyup
+    p.refresh = function(s){
+        let styles = p.combineStyles(); if (s){styles = s;}
+        let cc = Array.from(cc.childNodes).filter(x => x.classList.contains("packRow"))
+        for (var i=0; i<cc.length; i++){
+            cc[i].refresh(styles);
+        }
+    }
+let textPack = inputRowList.filter(x => x.i && x.i.includes("ssTextRow"))
+let groupPack = inputRowList.filter(x => x.i && x.i.includes("ssGroupRow"))
 // Text Styles
-    if (obj.type.includes("text")){
-let textPack = [
-{style: "background-color: white; display: flex", className: "packRow", childStyle: {}, children: [
-    {name: "color", type: "input", obj: { text: "Color", textStyle: "font-size: 0.7em; font-family: 'Chakra Petch'; margin-top: 0.1em; margin-left: 0.1em;",
-    type: "input-color", style: [ {type: "width", val: "2em", affect: "parent"}, {type: "height", val: "3em", affect: "child"}, {type: "padding", val: "0", affect: ["parent","child"]}, {type: "border", val: "none", affect: ["child"]}, {type: "borderBottom", val: "2px solid black", affect: "child"}, {type: "backgroundColor", val: "rgba(0,0,0,0)", affect: "child"} ], defaultVal: "#000",
-        fList: {input: function(){
-     }}
-}},
-    {name: "fontSize", type: "input", obj: {text: "Size", textStyle: "font-size: 0.7em; font-family: 'Chakra Petch'; margin-top: 0.1em;",
-    type: "input-text", style: [{type: "width", val: "3em", affect: ["parent"]}, {type: "height", val: "100%", affect: "child"}, {type: "margin", val: "0", affect: "parent"}, {type: "borderTop", val: "none", affect: "child"},{type: "fontSize", val: "0.8em", affect: "child"},{type: "borderRadius", val: 0, affect: "child"}], defaultVal: "18px",
-        fList: {keyup: function(){
-    }}
-}}, // fontSIZE
-    {name: "fontFamily", type: "input", obj: { text: "Font Family", textStyle: "font-size: 0.7em; font-family: 'Chakra Petch'; margin-top: 0.1em;",
-    type: "input-text", style: [{type: "width", val: "calc(100% - 5em)", affect: ["parent"]}, {type: "height", val: "100%", affect: "child"}, {type: "margin", val: "0", affect: "parent"}, {type: "border", val: "none", affect: "child"}, {type: "border-bottom", val: "2px solid black", affect: "child"}, {type: "fontSize", val: "0.8em", affect: "child"}], defaultVal: "Noto Sans",
-        fList: {keyup: function(){
-    }}
-}}
-    ]},
-{style: "background-color: white; border-bottom: 2px solid black; border-top: 2px solid black; display: flex; margin-top: 1em;", className: "packRow", childStyle: {}, children: [
-    {name: "BIU", type: "opsList", args: [
-        [ {icon: "format_bold", value: {fontWeight: "bold"}}, {icon: "format_italic", value: {fontStyle: "italic"}}, {icon: "format_underlined", value: {textDecoration: "underline"}}], "multi", function(){
+function ts(){
+    let p1 = createPack(textPack,styles) // TEXT STYLES
+    let title1 = cre("div","slTitle"); title1.innerText = "Text Options"; p.appendChild(title1); title1.id = "ssTextOptionsTitle";
+    p.appendChild(p1); p1.classList.add("packRowGroup");
+    p1.addListener("input",p.changeStyle)
+}
 
-    }, "border: none; border-right: 2px solid black; width: 48%; margin: 0;", "width: 33%; font-size: 0.9em;"]
-    },
-    {name: "justify-text", type: "opsList", args: [
-        [{icon: "format_align_left", value: {justifyContent: "left"}},{icon: "format_align_center", value: {justifyContent: "center"}},{icon: "format_align_right", value: {justifyContent: "right"}}],
-    "single", function(){
-
-    }, "border: none; width: 48%; margin: 0;", "width: 33%; font-size: 0.9em;"
-    ]}
-    ]},
-{style: "background-color: white;", className: "packRow", childStyle: {}, children: [
-    {name: "align-text", type: "opsList", args: [
-    [{icon: "vertical_align_top", value: {alignItems: "left"}},{icon: "vertical_align_center", value: {alignItems: "center"}},{icon: "vertical_align_bottom", value: {alignItems: "right"}}],
-    "single", function(){
-
-    }, "width: 100%; border: none; margin-left: 0;", "width: 33%; font-size: 0.9em"
-]}
-    ]}
-]
-let p1 = createPack(textPack,styles) // TEXT STYLES
-let title1 = cre("div","slTitle"); title1.innerText = "Text Options"; p.appendChild(title1);
-p.appendChild(p1); p1.classList.add("packRowGroup");
+if (obj.type.includes("text")){
+    ts();
 }
 
 // Group Styles --- Child Alignment, Row Direction
     if (obj.type.includes("group")){
-let groupPack = [
-{style: "background-color: white; display: flex", className: "packRow", childStyle: {}, children: [
-    {name: "flex", type: "opsList", args: [
-        [{icon: "table_rows", value: {flexDirection: "row", display: "flex"}},{icon: "view_week", value: {flexDirection: "column", display: "flex"}}],
-    "single", function(){
 
-    }, "border: none; border-right: 2px solid black; width: 48%; margin: 0;", "width: 50%; font-size: 0.9em;"
-            ]},
-    {name: "justifyContent", type: "opsList", args: [
-        [{icon: "format_align_left", value: {justifyContent: "left"}},{icon: "format_align_center", value: {justifyContent: "center"}},{icon: "format_align_right", value: {justifyContent: "right"}}],
-    "single", function(){
-
-    }, "border: none; width: 48%; margin: 0;", "width: 33%; font-size: 0.9em;"
-            ]}
-    ]}
-]
 let p2 = createPack(groupPack,styles) // TEXT STYLES
-let title2 = cre("div","slTitle"); title2.innerText = "Group Options"; p.appendChild(title2);
+let title2 = cre("div","slTitle"); title2.innerText = "Group Options"; p.appendChild(title2); title2.id = "ssGroupOptionsTitle";
 p.appendChild(p2); p2.classList.add("packRowGroup");
+        p2.addListener("input",p.changeStyle)
     }
 
 
@@ -465,83 +491,61 @@ p.appendChild(p2); p2.classList.add("packRowGroup");
 let allPack = [
 {style: "border-bottom: 2px solid black; display: flex;", className: "packRow", children: [
     {name: "width", type: "input", obj: {
-    type: "input-text", fList: {keyup: function(){
-        console.log("WEH")
-    }}, style: [
+    type: "input-text", style: [
         {type: "width", val: "50%", affect: "parent"}, {type: "border", val: "none", affect: "child"}, {type: "border-right", val: "2px solid black", affect: "parent"}
     ], placeholder: "Width"
     }},
     {name: "height", type: "input", obj: {
-    type: "input-text", fList: {keyup: function(){
-        console.log("WEH")
-    }}, style: [
+    type: "input-text", style: [
         {type: "width", val: "50%", affect: "parent"}, {type: "border", val: "none", affect: "child"}
     ], placeholder: "Height"
     }}
 ]},
 {style: "border-bottom: 2px solid black; display: flex;", className: "packRow", children: [
     {name: "padding", type: "input", obj: {
-    type: "input-text", fList: {keyup: function(){
-        console.log("WEH")
-    }}, style: [
+    type: "input-text", style: [
         {type: "width", val: "50%", affect: "parent"}, {type: "border", val: "none", affect: "child"}, {type: "border-right", val: "2px solid black", affect: "parent"}
     ], placeholder: "Padding"
     }},
     {name: "margin", type: "input", obj: {
-    type: "input-text", fList: {keyup: function(){
-        console.log("WEH")
-    }}, style: [
+    type: "input-text", style: [
         {type: "width", val: "50%", affect: "parent"}, {type: "border", val: "none", affect: "child"}
     ], placeholder: "Margin"
     }}
 ]},
 {style: "border-bottom: 2px solid black; display: flex;", className: "packRow", children: [
     {name: "border", type: "input", obj: {
-    type: "input-text", fList: {keyup: function(){
-        console.log("WEH")
-    }}, style: [
-        {type: "width", val: "50%", affect: "parent"}, {type: "border", val: "none", affect: "child"}
+    type: "input-text", style: [
+        {type: "width", val: "100%", affect: "parent"}, {type: "border", val: "none", affect: "child"}
     ], placeholder: "Border"
     }}
 ]},
-{style: "border-bottom: 2px solid black; display: flex;", className: "packRow", children: [
+{style: "border-bottom: 2px solid black; display: flex; align-items: center;", className: "packRow", children: [
+    {name: "toggle-backgroundColor", type: "input", obj: {
+        type: "input-checkbox", style: [ {type: "width", val: "3em", affect: "parent"}, {type: "height", val: "2em", affect: "child"}, {type: "padding", val: "0", affect: ["parent","child"]}, {type: "border", val: "none", affect: ["child"]}, {type: "marginBottom", val: "0", affect: "parent"}, {type: "backgroundColor", val: "rgba(0,0,0,0)", affect: "child"} ], defaultVal: "#000", text: "Show BG",  textStyle: "font-size: 0.6em; margin-left: 1px;",
+            defaultVal: true
+            }},
     {name: "backgroundColor", type: "input", obj: {
-        type: "input-color", style: [ {type: "width", val: "3em", affect: "parent"}, {type: "height", val: "3em", affect: "child"}, {type: "padding", val: "0", affect: ["parent","child"]}, {type: "border", val: "none", affect: ["child"]}, {type: "marginBottom", val: "0", affect: "parent"}, {type: "backgroundColor", val: "rgba(0,0,0,0)", affect: "child"} ], defaultVal: "#000",
-                fList: {input: function(){
-
-        }}, text: "Background", textStyle: "font-size: 0.6em; margin-left: 1px;", defaultVal: "#ffffff"
+        type: "input-color", style: [ {type: "width", val: "2.45em", affect: "parent"}, {type: "height", val: "2.45em", affect: "child"}, {type: "padding", val: "0", affect: ["parent","child"]}, {type: "border", val: "none", affect: ["child"]}, {type: "marginBottom", val: "0", affect: "parent"}, {type: "backgroundColor", val: "rgba(0,0,0,0)", affect: "child"} ], defaultVal: "#000", text: "Background", textStyle: "font-size: 0.6em; margin-left: 1px;", defaultVal: "#ffffff"
     }},
     { name: "opacity", type: "input", obj: {
-        text: "Opacity", type: "input-range", style: [{type: "margin", val: "0.25em", affect: "parent"}, {type: "padding", val: 0, affect: "child"}, {type: "backgroundColor", val: "#000000", affect: "child"}, {type: "justifyContent", val: "center", affect: "parent"}, {type: "width", val: "calc(50% - 2.25em)", affect: "parent"}
+        text: "Opacity", type: "input-range", style: [{type: "margin", val: "0.25em", affect: "parent"}, {type: "padding", val: 0, affect: "child"}, {type: "backgroundColor", val: "#000000", affect: "child"}, {type: "justifyContent", val: "center", affect: "parent"}, {type: "width", val: "calc(50% - 3.25em)", affect: "parent"}
         ],
-            max: 100, min: 0, step: 1, defaultVal: "100",
-            fList: {input: function(){
-                console.log("S");
-            }}
+            max: 100, min: 0, step: 1, defaultVal: "100"
     }},
     { name: "borderRadius", type: "input", obj: {
-        text: "Roundness", type: "input-range", style: [{type: "margin", val: "0.25em", affect: "parent"}, {type: "padding", val: 0, affect: "child"}, {type: "backgroundColor", val: "#000000", affect: "child"}, {type: "justifyContent", val: "center", affect: "parent"}, {type: "width", val: "calc(50% - 2.25em)", affect: "parent"}
+        text: "Roundness", type: "input-range", style: [{type: "margin", val: "0.25em", affect: "parent"}, {type: "padding", val: 0, affect: "child"}, {type: "backgroundColor", val: "#000000", affect: "child"}, {type: "justifyContent", val: "center", affect: "parent"}, {type: "width", val: "calc(50% - 3.25em)", affect: "parent"}
         ],
-            max: 50, min: 0, step: 1, defaultVal: "0",
-            fList: {input: function(){
-                console.log("S");
-            }}
+            max: 100, min: 0, step: 0.5, defaultVal: "0",
     }}
 ]}
 ]
 let p3 = createPack(allPack,styles) // TEXT STYLES
-let title3 = cre("div","slTitle"); title3.innerText = "Other Options"; p.appendChild(title3);
+let title3 = cre("div","slTitle"); title3.innerText = "Other Options"; p.appendChild(title3); title3.id = "ssOtherOptionsTitle";
 p.appendChild(p3); p3.classList.add("packRowGroup");
+    p3.addListener("input",p.changeStyle)
 
-// FUNCTIONS
-p.styles = function(){
-    let arr = [];
-        let childs = Array.from(p.childNodes).filter(x => x.className && x.className.includes("packRow"))
-    for (var i=0; i<childs.length; i++){
-        arr.push(childs[i].list())
-    }
-return arr;
-}
+
 
 
 
@@ -557,7 +561,11 @@ if (typeof obj === "string"){
     if (obj === "text"){
     obj = {id: randomUntil(4,4,order), type: "text", title: "Text",
         style: {
-            value: "Text"
+            value: "Text", color: "#000000",
+            fontSize: "18px", fontFamily: "Noto Sans",
+            justifyContent: "left", alignItems: "center",
+            backgroundColor: "#ffffff",
+            opacity: "100", borderRadius: "0"
         }};
     } else if (obj === "group"){
     obj = {id: randomUntil(4,4,order), type: "group", title: "Group",
@@ -565,19 +573,23 @@ if (typeof obj === "string"){
 
         }, items: []};
     }
-} else if (typeof obj === "object" && obj.type.includes("-")) { //console.log("576",obj)
+}
+else if (typeof obj === "object" && obj.type.includes("-")) { //console.log("576",obj)
     obj = {id: randomUntil(4,4,order), type: "module", title: obj.name, mID: obj.id,
          style: {
 
          }}
-} else {return false}
+}
+else if (obj.title){
+
+}
+else {return false}
+
 
 let iconName = "";
-if (obj.type === "text"){iconName = "text_format"}
-if (obj.type === "group"){iconName = "folder"}
-if (obj.type === "module"){iconName = "extension";}
+if (obj.type === "text"){iconName = "text_format"} else if (obj.type === "group"){iconName = "folder"} else if (obj.type === "module"){iconName = "extension";} else {}
 
-let i = cre("div","scModule"); i.dataset.data = JSON.stringify(obj);
+let i = cre("div","ssModule"); i.dataset.data = JSON.stringify(obj);
     i.data = function(){return JSON.parse(i.dataset.data);}
     i.save = function(data,key){
         if (key){
@@ -591,43 +603,106 @@ let i = cre("div","scModule"); i.dataset.data = JSON.stringify(obj);
         let data = i.data(); data[key] = value;
         i.save(data);
     }
+    i.loc = function(){
+        return get_index("id",i.data().id,pd("storySheet").order(),"items")
+    }
+    i.get = function(key){
+        return i.data()[key]
+    }
 
     let icon = ic(iconName); i.appendChild(icon);
-    let inpD = document.createElement("div"); inpD.className = "scmInpDiv"; i.appendChild(inpD);
+    let inpD = document.createElement("div"); inpD.className = "ssModuleInpDiv"; i.appendChild(inpD);
     let ip = document.createElement("input"); i.appendChild(ip);
     ip.onkeyup = function(){ i.change("title",ip.value); }
     if (obj.title){ip.value = obj.title;}
 
 
-if (obj.type === "group"){i.ondblclick = function(){
-    if (i.nextSibling && i.nextSibling.className === "scmBody"){i.nextSibling.remove();}
-    else { let body = document.createElement("div"); body.className = "scmBody"; i.after(body);
-        let o = i.data(); if (o && o.items){
-        for (var x=0; x<o.items.length; x++){
-            body.appendChild(scCreateItem(o.items[x].type,o.items[x]));}
-        };
-        body.ondragover = function(){event.preventDefault()}; body.ondrop = scDragDrop; body.dataset.id = o.id;
+//GROUP ONLY
+if (obj.type === "group"){
+    i.isOpen = function(){
+        if (i.nextSibling !== null && i.nextSibling.className === "scmBody"){return true}
+        return false
     }
-} }
+    i.folder = function(){
+        if (i.isOpen()) {return i.nextSibling}
+        else {return false}
+    }
+    i.openFolder = function(){
+        i.closeFolder();
+        if (i.data().items && i.data().items.length > 0){createFolder(i.data());}
+    }
+    i.closeFolder = function(){
+        if (i.isOpen()){
+            i.folder().remove();
+        }}
+    i.toggleFolder = function(type){
+        if (i.data().items && i.data().items.length === 0){i.closeFolder(); return}
+        if (type){
+            if (i.folder()){i.closeFolder();}
+            if (type === "open"){i.openFolder();}
+        } else {
+            if (i.folder()){i.closeFolder();}
+            else {i.openFolder()}
+        }
+    }
+
+
+
+    function createFolder(data){
+    let body = cre("div","scmBody"); i.after(body);
+    // FUNCTIONS
+    body.ondragover = function(){event.preventDefault()};
+    body.ondrop = modDragDrop;
+    body.data = function(name){
+        if (name){return JSON.parse(body.dataset[name])}
+        return JSON.parse(body.dataset.data)
+    }
+    body.refresh = function(){
+        if (!i.data().items){return}
+        let items = i.data().items;
+        for (var x=0; x<items.length; x++){
+            body.appendChild(ssCreateItem(items[x]))
+        }
+    }
+    body.save = function(){
+        let d = body.data();
+        let cl = []; for (var x=0; x<body.childNodes.length; x++){cl.push(body.childNodes[x].data())};
+        d.items = cl;
+        body.dataset.data = JSON.stringify(d);
+    }
+    // END FUNCTIONS
+
+
+    body.dataset.data = JSON.stringify(data);
+    body.dataset.id = i.data().id;
+
+    body.refresh()
+    } // create folder
+
+i.ondblclick = function(){
+    i.toggleFolder()
+}
+
+}// if group
 
 
 
 
 
 i.addEventListener("click",function(){
-    console.log("click")
     ssStyleList(i);
-    //selectDiv("scOpenItem","stay");
+    selectDiv("ssModule","stay");
     if (pd("scContextMenu") !== null){pd("scContextMenu").remove()}
 });
-console.log(i)
 
 /* DRAGGABLE */
-i.draggable = true; i.ondragstart = scDragStart;
+i.draggable = true; i.ondragstart = modDragStart;
+i.ondragend = function(){i.id = ""}
 /* onContextMEnu */
-i.oncontextmenu = function(){event.preventDefault(); scContextMenu(o);}
+i.oncontextmenu = function(){event.preventDefault(); scContextMenu(i);}
 /* dragover */
-i.ondragover = function(){event.preventDefault()}; i.ondrop = scDragDrop;
+i.ondragover = function(){event.preventDefault()};
+i.ondrop = modDragDrop;
 
 
 return i;
@@ -636,7 +711,11 @@ return i;
 
 
 
-function ssCreatePreview(arr,p){
+
+
+
+
+function ssCreatePreview(arr,p,loc){
 let ss = pd("storySheet");
     while (p.childNodes.length > 0){p.childNodes[0].remove();}
     for (var i=0; i<arr.length; i++){ let mod = arr[i]; //console.log(mod);
@@ -645,12 +724,19 @@ let ss = pd("storySheet");
             div.data = function(){return JSON.parse(div.dataset.data)}
         if (mod.style){ for (key in mod.style){
             if (key === "value"){div.innerText = mod.style[key]}
+            else if (key === "opacity"){ div.style[key] = JSON.parse(mod.style[key])/100;}
+            else if (key === "borderRadius"){ div.style[key] = mod.style[key] + "px"}
+            else if (key.includes("toggle-")){
+                if (mod.style[key] !== "on"){
+                div.style[key.split("-")[1]] = undefined}
+            }
             else {div.style[key] = mod.style[key]}
         }}
         p.appendChild(div)
         if (mod.type === "text") { //console.log("text")
+            div.style.display = "flex";
         } else if (mod.type === "group"){ if (mod.items){
-            scCreatePreview(mod.items,div);
+            ssCreatePreview(mod.items,div);
             if (mod.style["item-alignment"] && mod.style["item-alignment"] === "Horizontal"){
                 div.style.display = "flex"; div.style.alignItems = "baseline";}
         }
@@ -662,219 +748,30 @@ let ss = pd("storySheet");
             div.appendChild(module)
         } else {console.log("err"); return []}
     }
-if (ss.order().length > 0){
-    ss.save(ss.order(),"order")
-}
-}
+if (ss.order().length > 0){ ss.save(ss.order(),"order"); }
 
-
-
-
-
-
-
-
-function scModulePicker(p,order,list){
-    let c = coverDiv(p); let div = document.createElement("div"); div.id = "scModulePicker"; c.appendChild(div);
-    let ti = document.createElement("div"); ti.id = "scmpTitle"; div.appendChild(ti); ti.innerText = "Select Module to Add";
-    let li = document.createElement("div"); li.id = "scmpList"; div.appendChild(li);
-    for (var i=0; i<modList.length; i++){
-        let mod = createModuleDiv(modList[i],c); mod.childNodes[1].addEventListener("click",function(){ let slct = document.getElementById("selectedModule"); if (slct !== null){
-            let m = scCreateItem("module",JSON.parse(slct.dataset.data)); list.appendChild(m); c.remove(); scCreatePreview(getSCOrder(),pd("scPreview"))
-        }})
-        li.appendChild(mod)}
-
-}
-
-function scCreateItem(type,obj){ let d = getDataset("storyCreator","data"); let o; let iconName = ""; // console.log(type,obj)
-    if (!obj){
-        if (type === "text"){o = {id: randomUntil(4,4,d[1].order), type: "text", title: "Text", style: {value: "Text"}};
+if (loc){ // open up to this option, then click
+    let elemClick = pd("ssList").childNodes[loc[0]];
+        if (loc.length === 1){elemClick.click()}
+        else {elemClick.openFolder();}
+    for (var i=1; i<loc.length; i++){
+        elemClick = elemClick.nextSibling.childNodes[loc[i]];
+        if (elemClick.openFolder){
+            if (i === loc.length-1){pd("ssList").item = elemClick;}
+            elemClick.openFolder();
+        } else {
+            if (pd("scStyleList").item.data().id === get_item(loc, ss.order(), "items").id){return}
+            elemClick.click();
+            pd("ssList").item = elemClick;
+            return
         }
-        if (type === "group"){o = {id: randomUntil(4,4,d[1].order), type: "group", title: "Group", style: {}, items: []};
-        }
-    } else if (obj && type === "module") { //console.log("576",obj)
-        if (obj.style && !obj.type.includes("-")) {o = obj}
-        else {o = {id: randomUntil(4,4,d[1].order), type: "module", title: obj.name, mID: obj.id, style: []}}
-    } else if (obj){o = obj;}
-    else {return false}
-    if (type === "text"){iconName = "text_format"}
-    if (type === "group"){iconName = "folder"}
-    let i = document.createElement("div"); i.dataset.data = JSON.stringify(o); i.className = "scModule";
-    if (type === "module"){ iconName = "extension";}
-    if (type === "group"){i.ondblclick = function(){
-        if (i.nextSibling && i.nextSibling.className === "scmBody"){i.nextSibling.remove();}
-        else { let body = document.createElement("div"); body.className = "scmBody"; i.after(body);
-            let o = i.data(); if (o && o.items){
-            for (var x=0; x<o.items.length; x++){body.appendChild(scCreateItem(o.items[x].type,o.items[x]));}};
-            body.ondragover = function(){event.preventDefault()}; body.ondrop = scDragDrop; body.dataset.id = o.id;
-        }
-    }; i.ondragover = function(){event.preventDefault()}; i.ondrop = scDragDrop;}
-    let icon = ic(iconName); i.appendChild(icon);
-    let inpD = document.createElement("div"); inpD.className = "scmInpDiv"; i.appendChild(inpD);
-    let ip = document.createElement("input"); i.appendChild(ip);
-    ip.onkeyup = function(){ i.change("title",ip.value); }
-    if (o && o.title){ip.value = o.title;}
-    i.data = function(){return this.dataset.data;}
-    i.save = function(data,key){
-        if (key){i.dataset[key] = JSON.stringify(data); return}
-        i.dataset.data = JSON.stringify(data);
-        }
-    i.change = function(key,value){
-        let data = i.data(); data[key] = value;
-        i.save(data);
     }
-
-
-    i.addEventListener("click",function(){
-        scCreateStyleList(i);
-        selectDiv("scOpenItem","stay");
-        if (pd("scContextMenu") !== null){pd("scContextMenu").remove()}
-    });
-    /* DRAGGABLE */
-    i.draggable = true; i.ondragstart = scDragStart;
-    /* onContextMEnu */
-    i.oncontextmenu = function(){event.preventDefault(); scContextMenu(o);}
-    return i;
+}
 }
 
 
 
 
-function scCreateStyleList(elem){ let p = pd("scStyleList"); while (p.childNodes.length >0){p.childNodes[0].remove();};
-    function scSLSave(){ let sl = getSCstyleList(); let d = getDataset(elem,"data"); d[1].style = sl; d[0].dataset.data = JSON.stringify(d[1]);
-        let newOrder = save_item(d[1].id,d[1],getSCOrder(),"items")
-        let sp = pd("scPreview"); while (sp.childNodes.length >0){sp.childNodes[0].remove()}
-        scCreatePreview(newOrder,sp)
-    }
-
-    let obj = JSON.parse(elem.dataset.data); p.itemID = obj.id; p.parentNode.parentNode.itemID = p.itemID;
-    if (obj.type === "text"){
-        let title = document.createElement("div"); title.className = "slTitle"; title.innerText = "Text Options"; p.appendChild(title);
-// VALUE
-        let vd = document.createElement("div"); vd.style = "display: flex; padding: 1em 1em 0 1em;"; p.appendChild(vd);
-        let sv = createInput(inpList.find(x => x.id === "slValue")); vd.appendChild(sv);
-// FONT FAMILY / SIZE
-        let ffsD = document.createElement("div"); ffsD.style = "display: flex; padding: 0 1em;"; p.appendChild(ffsD);
-        let ffsDFf = createInput(inpList.find(x => x.id === "slFontFamily")); ffsD.appendChild(ffsDFf);
-        let ffsDFs = createInput(inpList.find(x => x.id === "slFontSize")); ffsD.appendChild(ffsDFs);
-
-// FONT COLOR, WHEEL
-        let fcwD = document.createElement("div"); fcwD.style = "display: flex; padding: 0 1em"; p.appendChild(fcwD);
-        let fcwDFc = createInput(inpList.find(x => x.id === "slFontColor")); fcwD.appendChild(fcwDFc);
-        let fcwDCw = createInput(inpList.find(x => x.id === "slColorWheel")); fcwD.appendChild(fcwDCw);
-        fcwDCw.inputElem.id = "";
-        fcwDCw.oninput = function(){fcwDFc.inputElem.value = fcwDCw.inputElem.value; scSLSave()}
-        fcwDFc.oninput = function(){fcwDCw.inputElem.value = fcwDFc.inputElem.value; scSLSave()}
-// ALIGN TEXT
-        let atd = document.createElement("div"); atd.style = "display: flex; padding: 0 1em;"; p.appendChild(atd);
-        let at = createInput(inpList.find(x => x.id === "slAlignText")); atd.appendChild(at);
-// BIU
-        let biu = ptCreateOps([ {icon: "format_bold", value: {fontWeight: "bold"}}, {icon: "format_italic", value: {fontStyle: "italic"}}, {icon: "format_underlined", value: {textDecoration: "underline"}}],"multi",function(){ scSLSave() }); p.appendChild(biu); biu.style.margin = "0 1em 0 1em"; biu.style.width = "calc(100% - 2em)"; biu.style.borderWidth = "2px"; biu.id = "slBIU"
-
-        pd("slValue").onkeyup = scSLSave; pd("slFontFamily").onkeyup = scSLSave; pd("slFontSize").onkeyup = scSLSave; pd("slFontColor").onkeyup = scSLSave; pd("slAlignText").onkeyup = scSLSave;
-
-// IF Opening IN
-        if (obj.style){ let styleL = obj.style
-            if (styleL.value){pd("slValue").value = styleL.value;}
-            if (styleL.fontFamily){pd("slFontFamily").value = styleL.fontFamily;}
-            if (styleL.fontSize){pd("slFontSize").value = styleL.fontSize;}
-            if (styleL.color){pd("slFontColor").value = styleL.color; fcwDCw.inputElem.value = styleL.color;}
-            if (styleL.textAlign){pd("slAlignText").value = styleL.textAlign;}
-            if (styleL.fontWeight){biu.childNodes[0].click();}
-            if (styleL.fontStyle){biu.childNodes[1].click();}
-            if (styleL.textDecoration){biu.childNodes[2].click();}
-        }
-    } else if (obj.type === "group"){
-        let title = document.createElement("div"); title.className = "slTitle"; title.innerText = "Group Options"; p.appendChild(title);
-// Child - Alignment
-        let ald = document.createElement("div"); ald.style = "display: flex; padding: 1em;"; p.appendChild(ald);
-        let dpAl = dpList.find(x => x.id === "slgAlignment"); dpAl.fList.click = scSLSave;
-        let al = createDropdown(dpAl); ald.appendChild(al);
-        if (obj.style && obj.style["childAlignment"]){Array.from(al.listElem.childNodes).find(x => x.innerText === obj.style["childAlignment"]).click()} else {al.listElem.childNodes[0].click();}
-
-    } else if (obj.type === "module"){
-        let title = document.createElement("div"); title.className = "slTitle"; title.innerText = "Module Options"; p.appendChild(title);
-        console.log("?")
-    } else {console.log("error"); return}
-// REST OF MODULES -- wdith, hieght, padding, margin, background color
-    let mLis = document.createElement("div"); p.appendChild(mLis); mLis.style = "padding: 1em;";
-    let mhd = document.createElement("div"); mhd.style = "display: flex;"; mLis.appendChild(mhd);
-    let mWidth = createInput(inpList.find(x => x.id === "slWidth")); mhd.appendChild(mWidth); mWidth.style.marginRight = "1em"
-    let mHeight = createInput(inpList.find(x => x.id === "slHeight")); mhd.appendChild(mHeight);
-    let pmDiv = document.createElement("div"); mLis.appendChild(pmDiv); pmDiv.style = "display: flex;";
-    let mPadding = createInput(inpList.find(x => x.id === "slPadding")); pmDiv.appendChild(mPadding); mPadding.style.marginRight = "1em"
-    let mMargin = createInput(inpList.find(x => x.id === "slMargin")); pmDiv.appendChild(mMargin);
-    let bgDiv = document.createElement("div"); bgDiv.style = "display: flex;"; mLis.appendChild(bgDiv)
-    let mBG = createInput(inpList.find(x => x.id === "slBackgroundCol")); bgDiv.appendChild(mBG);
-    let mWh = createInput(inpList.find(x => x.id === "slColorWheel")); bgDiv.appendChild(mWh);
-    mWh.inputElem.id = ""; mWh.oninput = function(){mBG.inputElem.value = mWh.inputElem.value; scSLSave()}
-    mBG.oninput = function(){mWh.inputElem.value = mBG.inputElem.value; scSLSave()}
-    pd("slWidth").onkeyup = scSLSave; pd("slHeight").onkeyup = scSLSave; pd("slPadding").onkeyup = scSLSave; pd("slMargin").onkeyup = scSLSave; pd("slBackgroundCol").onkeyup = scSLSave;
-
-
-    let styleL = obj.style; if (styleL){
-        if (styleL.width){pd("slWidth").value = styleL.width;}
-        if (styleL.height){pd("slHeight").value = styleL.height;}
-        if (styleL.padding){pd("slPadding").value = styleL.padding;}
-        if (styleL.margin){pd("slMargin").value = styleL.margin;}
-        if (styleL.backgroundColor){pd("slBackgroundCol").value = styleL.backgroundColor; mWh.inputElem.value = styleL.backgroundColor;}}
-
-
-}
-
-function getSCstyleList(){ let list = {};
-    // TEXT
-    let vl = pd("slValue"); if (vl !== null && vl.value.length > 0){list["value"] = vl.value} /* value */
-    let ff = pd("slFontFamily"); if (ff !== null && ff.value.length > 0){list["fontFamily"] = ff.value} /* font family */
-    let fs = pd("slFontSize"); if (fs !== null && fs.value.length > 0){list["fontSize"] = fs.value} /* font size */
-    let fc = pd("slFontColor"); if (fc !== null && fc.value.length > 0){list["color"] = fc.value} /* font size */
-    let ta = pd("slAlignText"); if (ta !== null && ta.value.length > 0){list["textAlign"] = ta.value} /* text align */
-    /* GROUP */
-    let ag = pd("slgAlignment"); if (ag !== null && ag.inputElem.childNodes.length > 0){list["item-alignment"] = ag.inputElem.childNodes[0].innerText} /* text align */
-// BIU
-    let biu = pd("slBIU"); if (biu !== null){ let biuD = JSON.parse(biu.dataset.data)
-        for (key in biuD){list[key] = biuD[key]}
-    }
-// ALL
-    let wd = pd("slWidth"); if (wd !== null && wd.value.length > 0){list["width"] = wd.value}
-    let ht = pd("slHeight"); if (ht !== null && ht.value.length > 0){list["height"] = ht.value}
-    let pa = pd("slPadding"); if (pa !== null && pa.value.length > 0){list["padding"] = pa.value}
-    let ma = pd("slMargin"); if (ma !== null && ma.value.length > 0){list["margin"] = ma.value}
-    let bc = pd("slBackgroundCol"); if (bc !== null && bc.value.length > 0){list["backgroundColor"] = bc.value}
-    return list
-}
-
-function getSCOrder(){ let l = pd("schList"); let lis = Array.from(l.childNodes).filter(x => x.classList.contains("scModule"));
-    let arr = []; for (var i=0; i<lis.length; i++){arr.push(JSON.parse(lis[i].dataset.data))}
-    return arr
-}
-
-
-
-function scCreatePreview(arr,p){
-    if (p.id === "scPreview"){while (p.childNodes.length > 0){p.childNodes[0].remove();}}
-    for (var i=0; i<arr.length; i++){ let mod = arr[i]; //console.log(mod);
-        let div = document.createElement("div"); div.dataset.data = JSON.stringify(mod); div.dataset.id = mod.id;
-        if (mod.style){ for (key in mod.style){
-            if (key === "value"){div.innerText = mod.style[key]}
-            else {div.style[key] = mod.style[key]}
-        }}
-        p.appendChild(div)
-        if (mod.type === "text") { //console.log("text")
-        } else if (mod.type === "group"){ if (mod.items){
-            scCreatePreview(mod.items,div);
-            if (mod.style["item-alignment"] && mod.style["item-alignment"] === "Horizontal"){
-                div.style.display = "flex"; div.style.alignItems = "baseline";}
-        }
-
-        } else if (mod.type === "module"){ let module; let obj = modList.find(x => x.id === mod.mID);
-            if (obj.type.includes("input")){module = createInput(obj)}
-            if (obj.type.includes("dropdown")){module = createDropdown(obj)}
-            if (obj.type.includes("table")){module = createTable(obj)}
-            div.appendChild(module)
-        } else {console.log("err"); return []}
-    } if (getSCOrder().length > 0){ let sc = getDataset("storyCreator","data"); sc[1].order = getSCOrder(); sc[0].dataset.data = JSON.stringify(sc[1]); }
-}
 
 
 function scContextMenu(obj){

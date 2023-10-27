@@ -47,7 +47,7 @@ return c
 
 function coolButton(tx,ico,type){
     let div = document.createElement("button"); div.className = "coolButton"; if (type){div.classList.add(type)} else {div.classList.add("normal")}
-        if (ico){let icon = ic(ico); div.appendChild(icon); icon.style.backgroundColor = "transparent";icon.style.color = "inherit";}
+        if (ico){let icon = ic(ico); div.appendChild(icon); icon.style.backgroundColor = "transparent"; icon.style.color = "inherit";}
         let text = document.createElement("div"); text.innerText = tx; div.appendChild(text); text.className = "coolButtonText"
 return div
 }
@@ -60,7 +60,15 @@ return main
 }
 
 
-function pd(parent){ let p = parent; if (typeof parent === "string"){p = document.getElementById(parent);}
+function pd(parent){
+    let p = parent;
+    if (typeof parent === "string"){
+        if (parent[0] === "."){
+            p = Array.from(document.getElementsByClassName(parent.substring(1)))
+        } else {
+            p = document.getElementById(parent);
+        }
+    }
 return p
 }
 function cre(type,className,style){
@@ -119,28 +127,52 @@ function createMenu(obj){ let div = document.createElement("div"); div.id = obj.
 
 function createDropdown(obj){
 function cdInput(x){
-let div = cre("div","dpOption");
+let it = cre("div","dpOption");
 // moving function
-div.addEventListener("click",function(){
-if (div.parentNode.classList.contains("dpBot")){
+it.addEventListener("click",function(){
+//console.log(it,it.parentNode,it.parentNode.parentNode)
+if (it.parentNode.classList.contains("dpBot")){
     if (obj.type.includes("static")){
-        if (ct.input().length > 0){ let lis = ct.inputElem();
-            for (var i=0; i<lis.childNodes.length; i++){ bot.appendChild(lis.childNodes[i]); }; ct.sort(ct.listElem());
-        }}; inp.prepend(div);
-    }// move TO list
-else { if (!obj.type.includes("static")){ div.remove();} } // move BACK
-    });
+        if (ct.input().length > 0){
+            let lis = ct.inputElem();
+            for (var i=0; i<lis.childNodes.length; i++){
+                bot.appendChild(lis.childNodes[i]); };
+            ct.sort(ct.listElem());
+        }; inp.appendChild(it);
+    } else {
+            inp.value = it.innerText;
+        }
+// move TO selected list
+} else {
+        if (!obj.type.includes("static")){
+            inp.value = it.innerText
+        } else {
+            bot.appendChild(it)
+        }
+    } // move BACK
+});
 
-    if (typeof x === "string"){div.innerText = x;
+    if (typeof x === "string"){
+        it.innerText = x;
     } else { // OBJECT
         let types = ["title", "name", "text", "id"];
-        for (var i=0; i<types.length; i++){if (x[types[i]]){ div.innerText = x[types[i]]; break }}}
-    div.item = function(){return x}
-    div.id = x.id;
-    if ("fList" in obj){ // event listeners WHEN selected - css trickery
-        for (key in obj.fList){ div.addEventListener(key,obj["fList"][key])}}
-    return div
-} // cdInput
+        for (var i=0; i<types.length; i++){if (x[types[i]]){
+            it.innerText = x[types[i]];
+        break }}}
+    it.item = function(){return x}
+    it.dropdown = div;
+    if (x.id){it.id = x.id;}
+    if ("fList" in obj){
+        // event listeners ONLY WHEN selected - css trickery
+        for (key in obj.fList){
+            it.addEventListener(key,obj["fList"][key])}
+    }
+
+    return it
+} // function ELEM cdInput
+
+
+
     // MAIN CONTAINER OF DROPDOWN
 let ct = cre("div","dropdownContainer"); ct.dataset.data = JSON.stringify(obj);
     let div = cre("div","dropdown"); ct.appendChild(div); // Actual dropdown
@@ -178,12 +210,11 @@ let ct = cre("div","dropdownContainer"); ct.dataset.data = JSON.stringify(obj);
             if (!Array.isArray(list) && list.nodeName){list = Array.from(list.childNodes)} // element
         for (var i=0; i<list.length; i++){ let item = list[i];
             if (x === undefined || list.nodeName) {item = list[i].item();}
-//console.log(item)
             if (typeof item === "string"){arr.push(item);}
             else {
                 let types = ["title","name", "text", "id","value"];
-                for (var i=0; i<types.length; i++){if (item[types[i]]){
-                    arr.push(item[types[i]]); break;
+                for (var y=0; y<types.length; y++){if (item[types[y]]){
+                    arr.push(item[types[y]]); break;
                 }}}}
         if (arr.length === 1){return arr[0]}
         return arr
@@ -195,17 +226,20 @@ let ct = cre("div","dropdownContainer"); ct.dataset.data = JSON.stringify(obj);
             if (r) {elem.appendChild(r);}
         }
     }
-    div.select = function(tx){ // for static only --> leave blank to just remove all selected options and sort
-        let inputs = this.inputElem();
-            while (inputs.childNodes.length > 0){
+    div.select = function(tx){
+        // for static only --> leave blank to just remove all selected options and sort
+        let inputs = div.inputElem();
+        while (inputs.childNodes.length > 0 && inputs !== null){
                 bot.appendChild(inputs.childNodes[0]);
-            }; this.sort(bot);
-        let lis = this.list();
-            if (tx){
-                let selectedDiv = lis.find(x => x.innerText.toLowerCase() === tx.toLowerCase());
-                inp.appendChild(selectedDiv);
-                    //console.log(selectedDiv);
-                return selectedDiv }
+            }; div.sort(bot);
+
+        if (tx){
+            let lis = div.list();
+            let selectedDiv = lis.find(x => x.innerText.toLowerCase() === tx.toLowerCase());
+            //inp.appendChild(selectedDiv);
+            selectedDiv.click()
+            //console.log(selectedDiv);
+            return selectedDiv }
     }
     div.addListener = function(type,func){
         // add listener for ALL options
@@ -240,6 +274,7 @@ let ct = cre("div","dropdownContainer"); ct.dataset.data = JSON.stringify(obj);
     if (obj.text) {
         let tx = cre("span"); ct.appendChild(tx); tx.innerText = obj.text;
         if ("textStyle" in obj){tx.style = obj.textStyle}
+        tx.classList.add("inputText")
     }
     // if value exists
     if (obj.defaultVal || obj.value){
@@ -260,7 +295,8 @@ function createInput(obj){
         if (inp.parentNode.parentNode.id !== "mcPreviewMod" && document.getElementById("moduleCreator") !== null){
             saveDataset("moduleCreator","data",getModOptions());}})
     if ("fList" in obj){for (key in obj.fList){inp.addEventListener(key,obj.fList[key])}}
-    if ("text" in obj){let sp = document.createElement("span"); sp.innerText = obj.text; inpD.appendChild(sp);
+    if ("text" in obj){
+        let sp = document.createElement("span"); sp.innerText = obj.text; inpD.appendChild(sp); sp.classList.add("inputText")
         if ("textStyle" in obj){sp.style = obj.textStyle}
     }
     if (obj.id){inp.id = obj.id;}
@@ -268,8 +304,16 @@ function createInput(obj){
     if (obj.min){inp.min = obj.min;}
     if (obj.max){inp.max = obj.max;}
     if (obj.step){inp.step = obj.step;}
-    if (obj.defaultVal){inp.value = obj.defaultVal;}
-    if (obj.value){inp.value = obj.value;}
+    if (obj.defaultVal){
+        if (obj.type.includes("checkbox")){inp.checked = obj.defaultVal
+        } else {
+        inp.value = obj.defaultVal;
+    }}
+    if (obj.value){
+        if (obj.type.includes("checkbox")){inp.checked = obj.value
+        } else {
+            inp.value = obj.value;
+    }}
     if (obj.placeholder){inp.placeholder = obj.placeholder;}
     inpD.inputElem = inp;
     for (var i=0; i<obj.style.length; i++){ // ALL styles
@@ -433,6 +477,9 @@ function ctCell(obj,loc,tb){
         return popup
     }
     cell.oncontextmenu = function(){event.preventDefault();
+        if (this.table().json().type.includes("static")){return
+            //popup only for EXPANDABLE
+        }
         let pop = cell.popup(this.loc());
         if (pd("slctCell") !== null){pd("slctCell").id = "";}
         cell.id = "slctCell"; let head = pop.childNodes[0];
@@ -488,7 +535,7 @@ if (pd("mcptPopup") !== null){
     let r = pd("mcptPopup"); //console.log(r.loc(),this.loc())
     if (r.loc().toString() !== this.loc().toString()) {
         r.changeLoc(this.loc());
-        r.replace(cell.getDataset("data").style)
+        r.refresh(cell.getDataset("data").style)
     } //; console.log(r.loc())
     return
 }
@@ -504,7 +551,7 @@ let slctObj = table.findCell(this.loc()).data();
 //console.log(slctObj)
     let r1 = {style: "display: flex; width: calc(100% - 1em); margin: 0.5em;", className: "packRow", childStyle: {}, children: [
             {name: "type", type: "dropdown", obj: {
-                    type: "dropdown-static", text: "Type", ops: ["Title","Input"], style: [{type: "height", val: "3em", affect: "parent"}],
+                    type: "dropdown-static", text: "Type", ops: ["Title","Input"], style: [],
                     fList: {click: function(){ptSave()}},
                     defaultVal: this.table().findCell(location).data().type
                 }},
@@ -635,7 +682,7 @@ let op = cre("div","opdOp"); opd.appendChild(op); let a = arr[i]
     }
     opd.refresh = function(ops){ let d = getDataset(opd,"data"); d[1] = ops; d[0].dataset.data = JSON.stringify(d[1]);
         for (var i=0; i<opd.childNodes.length; i++){ let oc = opd.childNodes[i];
-        if (JSON.stringify(d[1]) === JSON.stringify(oc.data().value)){oc.classList.add("selected"); console.log("HUH")
+        if (JSON.stringify(d[1]) === JSON.stringify(oc.data().value)){oc.classList.add("selected");
         } else {oc.classList.remove("selected")}
         }
        // console.log(ops)
@@ -651,9 +698,55 @@ let op = cre("div","opdOp"); opd.appendChild(op); let a = arr[i]
     }
     opd.addListener = function(type,func){
         for (var i=0; i<opd.childNodes.length; i++){
-            opd.childNodes[i].addEventListener(type,func)
+            opd.childNodes[i].addEventListener("click",func)
         }
     }
 
     return opd
+}
+
+
+/* EXTRAS */
+function createElement(obj){
+let elem;
+// IF already made
+if (obj.nodeName) { return obj; }
+// Create Elem: --> input-text, div, button, p, etc
+if (obj.type.includes("-")){
+    elem = cre(obj.type.split("-")[0]);
+    elem.type = obj.type.split("-")[1]
+} else {elem = cre(obj.type)}
+
+// DATASETS if exist
+if (obj.dataset){
+    for (key in obj.dataset){elem.dataset[key] = obj.dataset[key]}
+}
+// Tags
+if (obj.tags){ for (key in obj.tags){
+    elem[key] = obj.tags[key];
+}}
+// STYLES
+if (obj.styles){ for (key in obj.styles){
+    elem[key] = obj.styles[key];
+}}
+// IF METHODS/functions
+if (obj.methods){ for (var i=0;i<obj.methods.length; i++){
+    let om = obj.methods[i];
+    // TYPE1 --> eventlistener
+    if (om.type){elem.addEventListener(om.type,om.func)}
+    // TYPE2 --> tagElem
+    if (om.name){elem[om.name] = om.func}
+}}
+// Children
+if (obj.children){
+    for (var i=0; i<obj.children.length; i++){
+        if (obj.children[i].nodeName){
+            elem.appendChild(obj.children[i])
+        } else {// if an element
+        elem.appendChild(createElement(obj.children[i]))
+        } // else, an obj to be created
+}}
+
+
+return elem
 }
