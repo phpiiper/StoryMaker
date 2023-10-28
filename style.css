@@ -54,11 +54,14 @@ body .icon {
 .hiddenScroll::-webkit-scrollbar, .hiddenScroll div::-webkit-scrollbar {width: 0 !important; height: 0 !important;}
 #toast {min-width: 250px; max-width: 40%; min-height: 60px; max-height: 120px;
     margin-left: -125px; text-align: center; display: flex; justify-content: center; align-items: center; border-radius: 2px; padding: 16px; position: fixed;
-    z-index: 100; right: 30px; top: 30px; transform: translateY(-10px); transition: 1s; opacity: 0;
+    z-index: 100; right: 30px; top: 30px; transform: translateY(-10px); transition: 1s;
     background-color: rgba(var(--c1)); color: #fff;
     box-shadow: 3px 6px 3px rgba(0,0,0,0.4);
+    font-size: 1em; font-family: var(--ffT1);
+   /* opacity: 0;*/
+   visibility: hidden;
 }
-#toast.visible { transform: translateY(0px); opacity: 1; }
+#toast.visible { transform: translateY(0px); visibility: visible; }
 
 .popUp {
     min-width: 250px; max-width: 40%;
@@ -191,10 +194,13 @@ body .icon {
 }
     #hpcsTextDiv div:first-child {
         font-size: var(--fsHPBtn);
+        font-family: var(--ffT2);
     }
     #hpcsTextDiv p {
     margin: 0;
-    font-size: var(--fsTBig);
+    font-size: calc(var(--fsTBig) * 1);
+    font-family: var(--ffT1);
+    font-weight: lighter;
     }
 
 
@@ -386,7 +392,11 @@ body .icon {
     padding: 1em; margin: 1rem;
         display: flex; align-items: center; justify-content: center;
     width: calc(18vw - 2rem); height: calc(18vw - 2rem);
+} .smStory:hover {cursor: pointer;}
+.smStory.selected {
+    background-color: pink;
 }
+
     .smStory .letter {
         font-size: calc(var(--fsH1) * 1.25);
         font-family: var(--ffH);
@@ -409,6 +419,7 @@ body .icon {
     display: flex; flex-direction: column;
     background-color: white;
 }
+#storyManager .right .top {overflow: auto; flex-wrap: wrap;}
 
 #smBody {
     width: 100%; height: 100%;
@@ -491,8 +502,93 @@ body .icon {
         padding-left: 0;
     }
 
+#smCCPopup {
+    width: 30%; height: 80px;
+    min-width: 100px; max-width: 400px;
+    display: flex;
+}
+#smCCPopup .inputContainer {
+    width: 100%; height: 100%;
+    background-color: white;
+    border-radius: 2rem 0 0 2rem;
+}
+    #smCCPopup .input {
+        width: 100%; height: 100%;
+        border: none;
+        background-color: transparent;
+        padding-left: 3rem;
+    }
+    #smCCPopup .input ~ span {
+        left: 3em;
+    }
+#smCCPopup > div:last-child {
+    border-radius: 0 2rem 2rem 0;
+    height: 100%;
+    background-color: black;
+    display: flex; align-items: center; justify-content: center;
+    border-left: 2px dashed black;
+} #smCCPopup > div:last-child:hover {
+    cursor: pointer;
+    background-color: white;
+} #smCCPopup > div:last-child:hover .icon {color: black;}
+#smCCPopup .icon {
+    color: white;
+    font-size: calc(var(--fsTBig)*1.5);
+}
 
 
+#smStoryAdder {
+    min-width: 80%;
+    height: 400px;
+    padding: 2rem 0.5rem;
+    background-color: white;
+    display: flex;
+    align-items: center;
+}
+    #smStoryAdder .left {
+        width: 300px; height: 300px;
+        margin: 2rem;
+        border: 2px solid black;
+
+        display: flex;
+        align-items: center; justify-content: center;
+        font-size: calc(var(--fsH1) * 3); font-weight: normal;
+        font-family: var(--ffT2);
+    }
+    #smStoryAdder .center {
+        height: 100%;
+        width: calc(100% - 450px);
+        display: flex; flex-direction: column;
+        padding: 1rem;
+    }
+    #smStoryAdder .inputContainer:has(textarea) {
+        height: 100%;
+    } #smStoryAdder textarea {
+        height: 100%;
+        border-top: none;
+    }
+    #smStoryAdder .right {
+        width: 200px;
+        height: 100%;
+        display: flex; flex-direction: column;
+        align-items: center; justify-content: center;
+    }
+    #smStoryAdder .iconDiv {
+        padding: 2rem 2rem 1rem;
+        margin: 0.25rem 0;
+        border: 2px solid black;
+        border-radius: 2px;
+    }
+    #smStoryAdder .right .icon {
+        font-size: 5rem;
+        padding: 0;
+    } #smStoryAdder .right .iconDiv:hover {
+        cursor: pointer; color: green;
+        }
+    #smStoryAdder .iconDiv span:last-child {
+        font-size: calc(var(--fsTBig) * 1.3);
+        color: black;
+    }
 
 
 #moduleManager {
@@ -504,6 +600,12 @@ body .icon {
     height: 53vh;
     border-bottom: 4px solid black;
     display: flex; flex-wrap: wrap; padding: 1rem 0.5rem;
+} #moduleManager .body:empty:after {
+    content: "Empty List -- Create some Modules!";
+    font-size: calc(var(--fsH1) * 0.7);
+    width: 100%; height: 100%;
+    display: flex;
+    align-items: center; justify-content: center;
 }
 .mmModule {
     background-color: white;
@@ -547,7 +649,13 @@ body .icon {
     overflow: auto;
     display: flex; align-items: center; justify-content: center;
 }
-
+    #mmPreview:empty:after {
+    content: "Preview -- Click on a Module to preview it here!";
+    font-size: calc(var(--fsH1) * 0.5);
+    width: 100%; height: 100%;
+    display: flex;
+    align-items: center; justify-content: center;
+    }
 
 
 #moduleCreator {
@@ -640,7 +748,7 @@ body .icon {
     #mccbpPrev {width: 100%; height: 100%; border-bottom: 2px solid black; margin-bottom: 0.2em; padding: 1em;}
         #mccbpPrev:after {content: "Mod Preview"; position: absolute; right: 0; bottom: 0; margin: 0.5em; background-color: black; color: white; padding: 0.2em 0.4em; border-radius: 2px;}
     #mccbpBot {width: 100%; height: 25%;}
-        #mccpbText {text-align: center;}
+        #mccpbText {text-align: center; font-size: 1.2em; font-weight: bolder;}
         #mccpbBList {width: 100%; padding: 0.2em; display: flex; justify-content: center;}
             #mccpbBList .coolButton {margin: 0.2em 0.5em; background-color: rgba(var(--c1),0.9);}
             #mccpbBList .coolButton:hover {background-color: rgba(var(--c1));}
@@ -780,7 +888,7 @@ body .icon {
         #scContextMenu .sccmRow:first-child {padding-left:0;}
 
 
-#scModulePicker {width: 70%; height: 95%; background-color: white; display: flex; flex-direction: column;}
+#ssModulePicker {width: 70%; height: 95%; background-color: white; display: flex; flex-direction: column;}
     #scmpTitle {width: 100%; padding: 1em; font-size: 1.4em; text-align: center;}
     #scmpList {width: 100%; height: 100%; display: flex; flex-wrap: wrap; align-content: flex-start;}
     #scmpList #selectedModule {background-color: rgba(var(--c3C),0.9); outline: 3px solid black;}

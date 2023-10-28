@@ -126,8 +126,8 @@ function createMenu(obj){ let div = document.createElement("div"); div.id = obj.
 
 
 function createDropdown(obj){
-function cdInput(x){
-let it = cre("div","dpOption");
+    function cdInput(x){
+    let it = cre("div","dpOption");
 // moving function
 it.addEventListener("click",function(){
 //console.log(it,it.parentNode,it.parentNode.parentNode)
@@ -316,11 +316,11 @@ function createInput(obj){
     }}
     if (obj.placeholder){inp.placeholder = obj.placeholder;}
     inpD.inputElem = inp;
-    for (var i=0; i<obj.style.length; i++){ // ALL styles
+    if (obj.style) {for (var i=0; i<obj.style.length; i++){ // ALL styles
         let s = obj.style[i];  //console.log(s)
         if ("affect" in s && s.affect.includes("parent")){ inpD.style[s.type] = s.val;}
         if ("affect" in s && s.affect.includes("child")){inp.style[s.type] = s.val; }
-    };
+    }};
     inp.getVal = function(){return inp.value;}; inpD.getVal = function(){return inp.value}
     return inpD
 }

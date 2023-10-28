@@ -51,7 +51,7 @@ function loadLS(){if (localStorage.storyCreator){
     } //try
     catch(err){console.log("ERR",err)}
 }}
-loadLS()
+
 
 
 

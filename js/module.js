@@ -33,7 +33,10 @@ function createModuleCreator(parent,obj){ //console.log("350",obj)
     let rdata = {Container: [], Element: [], focus: "Container"};
     if (obj){
         // style
-        rdata = {}; rdata.Container = obj.style.filter(x => x.affect === "parent"); rdata.Element = obj.style.filter(x => x.affect === "child"); rdata.focus = "Container";
+        rdata = {};
+            rdata.Container = obj.style.filter(x => x.affect === "parent");
+            rdata.Element = obj.style.filter(x => x.affect === "child");
+            rdata.focus = "Container";
     }
     r.dataset.data = JSON.stringify(rdata);
     r.data = function(){return JSON.parse(r.dataset.data)}
@@ -77,10 +80,11 @@ function createModuleCreator(parent,obj){ //console.log("350",obj)
 // mod options last?
 
 if (obj){ //console.log("392",obj);
+    console.log(obj)
 // main Type
-    lbl_dp.select(obj.type.split("-")[0]).click();
+    lbl_dp.select(obj.type.split("-")[0]);
 // sub
-    st.select(obj.type.split("-")[1]).click();
+    st.select(obj.type.split("-")[1]);
 // name
     name.inputElem.value = obj.name;
 
@@ -99,8 +103,14 @@ let styleList = pd("mcRightDiv").data();
 
 // {affect: ["parent"], type: "width", val: "100%"}
 obj.style = [];
-    styleList.Container.map(x => obj.style.push({affect: "parent", type: x.style, val: x.value}));
-    styleList.Element.map(x => obj.style.push({affect: "child", type: x.style, val: x.value}))
+// CONTAINER
+for (var i=0; i<styleList.Container.length; i++){ let c = styleList.Container[i];
+    obj.style.push({affect: "parent", type: c.type, val: c.value})
+}
+// ELEMENT
+for (var i=0; i<styleList.Element.length; i++){ let e = styleList.Element[i];
+    obj.style.push({affect: "child", type: e.type, val: e.value})
+}
 
 let t1 = pd("mcType").input(); let t2 = pd("mcSubtype").input();
 obj.type = t1.toLowerCase() + "-" + t2.toLowerCase();
@@ -225,8 +235,13 @@ for (var i=0; i<list.length; i++){ let l = list[i];
     let tx = document.createElement("span"); tx.innerText = l.name; op.appendChild(tx);
 
  if ("placeholder" in l){inp.placeholder = l.placeholder}
-        let f = d[type].find(x => x.style === l.style);
-if (f){op.dataset.data = JSON.stringify(f); inp.value = f.value}
+
+ let f = d[type].find(x => x.type === l.type);
+if (f){
+    op.dataset.data = JSON.stringify(f);
+    inp.value = f.value
+    if (f.val){inp.value = f.val}
+}
     inp.onkeyup = function(){getModOptions()}
 
     } // for loop
@@ -339,7 +354,9 @@ function mccbPopup(obj){ let c = coverDiv(pd("content"));
     b2.onclick = function(){c.remove(); pd("moduleCreator").parentNode.remove(); createModuleManager("content")}
 
     let b3 = coolButton("Close","list"); btnl.appendChild(b3);
-    b3.onclick = function(){c.remove();}
+    b3.onclick = function(){
+        c.remove(); pd("moduleManager").refresh();
+    }
 
     if (obj.id){
         let ind = modList.findIndex(x => x.id === obj.id);
@@ -347,8 +364,8 @@ function mccbPopup(obj){ let c = coverDiv(pd("content"));
     }
     else {
         obj.id = randomUntil(5,5,modList);
-        console.log(obj); modList.push(obj); saveLS();
-    }
+        modList.push(obj); saveLS();
+    }; pd("moduleManager").refresh()
     if (pd("moduleManager") !== null){pd("moduleManager").refresh();}
 }
 

@@ -3,23 +3,30 @@ var modList = [
 var storyList = [
     {title: "Story Name", id: "abcd1234", charList: [], desc: "A short description", charSheet: [], storySheet: [] }
 ];
+    // CHAR //
+/*
+
+{id: "abcd1234", name: "Elnea", charOps: []}
+
+ */
+
 var groupList = []
 var charList = [];
 
 
 const mlStyles = [
-    {name: "Width", style: "width", family: "Size"},
-    {name: "Height", style: "height", family: "Size"},
-    {name: "Padding", style: "padding", family: "Size"},
-    {name: "Margin", style: "margin", family: "Size"},
-    {name: "Box Sizing", style: "box-sizing", family: "Size"},
-    {name: "Text Align", style: "text-align", family: "Font"},
-    {name: "Font Size", style: "font-size", family: "Font"},
-    {name: "Font Family", style: "font-family", family: "Font"},
-    {name: "Font Color", style: "color", family: "Font"},
-    {name: "Background Color", style: "background-color", family: "Style"},
-    {name: "Border", style: "border", family: "Style"},
-    {name: "Border Radius", style: "border-radius", family: "Style"}
+    {name: "Width", type: "width", family: "Size"},
+    {name: "Height", type: "height", family: "Size"},
+    {name: "Padding", type: "padding", family: "Size"},
+    {name: "Margin", type: "margin", family: "Size"},
+    {name: "Box Sizing", type: "box-sizing", family: "Size"},
+    {name: "Text Align", type: "text-align", family: "Font"},
+    {name: "Font Size", type: "font-size", family: "Font"},
+    {name: "Font Family", type: "font-family", family: "Font"},
+    {name: "Font Color", type: "color", family: "Font"},
+    {name: "Background Color", type: "background-color", family: "Style"},
+    {name: "Border", type: "border", family: "Style"},
+    {name: "Border Radius", type: "border-radius", family: "Style"}
 ]
 
 let mgsoOptions = [
@@ -159,7 +166,6 @@ const dpList = [
         let n = st.list()[i]; if (!moduleTypes[ch].includes(n.innerText)){n.style.display = "none"} else {n.style.display = null}
     }
     let fi = st.list().filter(x => x.style.display !== "none" && x.parentNode.classList.contains("dpBot"));
-    console.log(fi[0])
     fi[0].click()
     // mod options
     saveDataset("moduleCreator","data",getModOptions());
@@ -411,27 +417,31 @@ const ceList = [
 {i: "smOptions", type: "div", tags: {id: "smOptions", className: "top"}, children: [
     {type: "span", tags: {innerText: "ADD CHARACTER", className: "smOpDiv"}, methods: [
         {type: "click", func: function(){
-            // ADD CHARACTER POPUP
+            smCreateCharacterPopup("storyManager");
         }}
     ]},
     {type: "span", tags: {innerText: "Story Sheet", className: "smOpDiv"}, methods: [
         {type: "click", func: function(){
             // Open Story Sheet
+            createStorySheet("storyManager",pd("storyManager").story())
+            console.log("D", pd("storySheet").data())
         }}
     ]},
     {type: "span", tags: {innerText: "Character Sheet", className: "smOpDiv"}, methods: [
         {type: "click", func: function(){
-            // Open Story Sheet
+            toast("Under Construction! In the works!")
         }}
     ]},
     {type: "span", tags: {innerText: "Story Details", className: "smOpDiv"}, methods: [
         {type: "click", func: function(){
-            // Open Story Info Editor --> createStory popup changed
+            if (pd("storyManager").story()){
+                smStoryAdd("content",pd("storyManager").story())
+            } else {toast("Select a story before selecting this option!");}
         }}
     ]},
     {type: "span", tags: {innerText: "GUIDE", className: "smOpDiv"}, methods: [
         {type: "click", func: function(){
-            // OPEN mainguide(storymanager)
+                createGuideDiv("content").article("story_manager")
         }}
     ]},
     {type: "span", tags: {innerText: "EXIT", className: "smOpDiv"}, methods: [
@@ -448,18 +458,26 @@ const ceList = [
     ]},
     {type: "span", tags: {innerText: "Delete Module", className: "mmOpDiv"}, methods: [
         {type: "click", func: function(){
-            // Open Story Sheet
+            if (pd("moduleManager").selectedModule()){
+                let del = pd("moduleManager").selectedModule().data();
+                modList = modList.filter(x => x.id !== del.id)
+                saveLS()
+                pd("moduleManager").refresh()
+                pd("mmPreview").previousSibling.reset()
+            } else {toast("Please select a module!")}
         }}
     ]},
     {type: "span", tags: {innerText: "Change Module", className: "mmOpDiv"}, methods: [
         {type: "click", func: function(){
-            // Open Story Sheet
+            if (pd("moduleManager").selectedModule()){
+                createModuleCreator(pd("moduleManager"),pd("moduleManager").selectedModule().data())
+            } else {toast("Please select a module!")}
         }}
     ]},
     {type: "div", children: [
             {type: "span", tags: {innerText: "GUIDE", className: "smOpDiv"}, methods: [
                     {type: "click", func: function(){
-                            createGuideDiv("content").article("create_module")
+                            createGuideDiv("content").article("module_manager")
                         }}
                 ]},
             {type: "span", tags: {innerText: "EXIT", className: "smOpDiv"}, methods: [
@@ -473,8 +491,8 @@ const ceList = [
 
 
 const curStateList = [
-    {id: "cs1", title: "First Release", date: ["12","2023"], text: [
-        "This is a small text."
+    {id: "cs1", title: "First Look", date: ["10","2023"], text: [
+        "Character Creator (name pending) is public. Creating and editing stories and modules are currently available. Quite a few guides are available for them. However, Story Sheet isn't completed and Character Sheet is not done (at all). Settings as well is not available."
     ]}
 ]
 const guideArticles = [
@@ -735,6 +753,27 @@ const guideArticles = [
     {type: "h3", tags: {innerText: "Story Sheet Tips", style: "margin: 0px; font-weight: bold;"}},
     {type: "p", tags: {innerText: "Here are some quick tips for using the Story Sheet."}}
 
+]}},
+{id: "module_manager", obj: { type: "div", children: [
+    {type: "h3", tags: {innerText: "Module Manager", style: "margin: 0px; font-weight: bold;"}},
+    {type: "p", tags: {innerText: "This is the place where you will be managing your Modules for your stories. There are a few parts that will be of use."}},
+    {type: "h3", tags: {innerText: "[CREATE MODULE]"}},
+    {type: "p", tags: {innerText: "Create your Modules here. An in-depth guide of creating Modules can be found "}, children: [
+            {type: "span", tags: {innerText: "[Here]", className: "link", style: "font-family: inherit; margin-right: unset;"}, methods: [{type: "click", func: function(){ pd("mainGuide").article("create_module")}}]},
+            {type: "span", tags: {innerText: ". Just click on this option and you'll enter a new area where you can build your Modules. To exit that screen, you can click outside of the container. Though, caution when using it because your changes will not apply unless you press that Create Button.", style: "font-family: inherit; font-weight: normal;"}}
+    ]},
+    {type: "h3", tags: {innerText: "Selecting a Module"}},
+    {type: "p", tags: {innerText: "Below the menu bar will be a list of the Modules you have made. Hover over and click one to select it."}},
+    {type: "p", tags: {innerText: "Once selected, you will see some data popup beneath it, plus a previous of it beneath that! Click on the icon on the far right to open a pop-up to view it in a larger space. To exit, just click around the darkened area."}},
+    {type: "h3", tags: {innerText: "[Delete Module]"}},
+    {type: "p", tags: {innerText: "You will need to select a Module in the list below to use this option. If you click this option with a Module selected, it will be permanently deleted, so, be cautious about it."}},
+    {type: "h3", tags: {innerText: "[Change Module]"}},
+    {type: "p", tags: {innerText: "You will need to select a Module in the list below to use this option. If you click this option with a Module selected, you can change the Module. You will be pit back in the same area as when you create a Module, but, instead of creating a new one, it will instead edit your changes!"}}
+
+]}},
+{id: "story_manager", obj: { type: "div", children: [
+    {type: "h3", tags: {innerText: "Story Manager", style: "margin: 0px; font-weight: bold;"}},
+    {type: "p", tags: {innerText: "This is the place where you will be managing your stories and setting up their respective Characters, Story Sheet, and Character Sheets!"}}
 ]}}
 ]
 

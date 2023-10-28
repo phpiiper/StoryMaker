@@ -1,7 +1,12 @@
 createHomePage("content")
-//createGuideDiv("content").article("story_sheet")
+//createGuideDiv("content").article("module_manager")
+loadLS()
 
-//pd("hpButtonList").childNodes[2].click()
+
+//pd("hpButtonList").childNodes[1].click()
+//pd("mmOptions").childNodes[0].click()
+//pd("smOptions").childNodes[1].click()
+//pd("sshPopup").childNodes[4].click()
 //div.article("creating_module")
 
 

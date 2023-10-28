@@ -319,13 +319,16 @@ function createStoryCreator(parent,obj){ let p = pd(parent);
 function createStorySheet(parent,obj){
 let c = coverDiv(pd(parent)); let div = cre("div"); div.id = "storySheet"; c.appendChild(div);
 
-let js; if (!obj){js = {order: [], id: randomUntil(4,4,storyList)}} else {js = {order: obj.storySheet, id: obj.id}};
+let js; if (!obj){
+    js = {order: [], id: randomUntil(4,4,storyList)}
+} else {
+    js = {order: obj.storySheet, id: obj.id}
+};
 
 // LEFT Order
 let hd = cre("div"); hd.id = "ssHierarchy"; div.appendChild(hd);
     let hdl = cre("div"); hdl.id = "ssList"; hd.appendChild(hdl);
         hdl.ondragover = function(){event.preventDefault()};
-        hdl.ondrop = modDragDrop;
         hdl.refresh = function(ord){
             let order = div.data().order; if (ord) {order = ord;}
             while (hdl.childNodes.length > 0){hdl.childNodes[0].remove();}
@@ -404,7 +407,7 @@ function createSSpopup(obj){
             }
         },
         {tx: "Module", ic: "extension", func: function(){
-                ssModulePicker(c,pd("storySheet").order())
+                ssModulePicker(pd("storySheet").order())
             }
         }
     ]
@@ -710,11 +713,6 @@ return i;
 
 
 
-
-
-
-
-
 function ssCreatePreview(arr,p,loc){
 let ss = pd("storySheet");
     while (p.childNodes.length > 0){p.childNodes[0].remove();}
@@ -768,9 +766,6 @@ if (loc){ // open up to this option, then click
     }
 }
 }
-
-
-
 
 
 
@@ -834,6 +829,38 @@ function scContextMenu(obj){
 
     pd("content").onclick = function(){ if (!event.currentTarget.classList.contains("scModule")){m.remove(); pd("content").onclick = null}; tg.id = "";}
 }
+
+
+
+function ssModulePicker(order){
+let c = coverDiv(pd("storySheet").parentNode);
+console.log("PCIKER")
+let div = createElement({ type: "div", tags: {id: "ssModulePicker"}
+});
+
+let prev = cre("div"); prev.id = "ssMPPreview"; div.appendChild(prev);
+let ops = cre("div"); ops.id = "ssMMOptions"; div.appendChild(ops);
+let lis = cre("div"); lis.id = "ssMMList"; div.appendChild(lis);
+for (var i=0; i<modList.length; i++){
+    lis.appendChild(mmCreateModule(modList[i]))
+}
+
+
+    c.appendChild(div)
+    return div;
+}
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 /* COMPONENT CREATOR */

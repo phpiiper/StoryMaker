@@ -9,11 +9,11 @@ let tx = cre("h1"); tx.id = "hpTitle"; div.appendChild(tx);
 
 // LINKS
 let ld = cre("div"); ld.id = "hpLinksDiv"; div.appendChild(ld);
-    let rd = createElement({
+    /*let rd = createElement({
         type: "a", tags: {href: "https://www.reddit.com",target: "_blank", innerText: "REDDIT", className: "hpLink no-underline"}
-    }); ld.appendChild(rd)
+    }); ld.appendChild(rd)*/
     let gh = createElement({
-        type: "a", tags: {href: "https://www.github.com",target: "_blank", innerText: "GITHUB", className: "hpLink no-underline"}
+        type: "a", tags: {href: "https://github.com/phpiiper",target: "_blank", innerText: "GITHUB", className: "hpLink no-underline"}
     }); ld.appendChild(gh)
 // current state
 let cs = createElement(ceList.find(x => x.i === "CurrentState"));
@@ -54,13 +54,22 @@ return div
 
 function createStoryManager(parent){
 let c = coverDiv(parent); let div = cre("div"); div.id = "storyManager";
-div.openStory = function(id){
+
+div.select = function(id){
+    Array.from(sl.childNodes).find(x => x.dataset.id === id).click()
+}
+div.openStory = function(id){   if (!id){return}
 while (rbot.childNodes.length > 0){rbot.childNodes[0].remove();}
+div.dataset.id = id;
 div.story = function(){return storyList.find(x => x.id === id)}
     //console.log(id)
+
 // Char Sheet LEFT
 let lf = cre("div","left"); rbot.appendChild(lf);
     let csprev = cre("div"); csprev.id = "smCharSheet"; lf.appendChild(csprev);
+        csprev.refresh = function(){
+            console.log("REFRESH_CHARSHEET")
+        }
     let cstx = cre("span"); cstx.innerText = "Character Sheet"; lf.appendChild(cstx);
 // Options RIGHT
 let ro = cre("div","right"); rbot.appendChild(ro);
@@ -69,43 +78,62 @@ let ro = cre("div","right"); rbot.appendChild(ro);
         type: "dropdown-static", ops: div.story().charList,
         style: [
             {type: "height", val: "5rem", affect: "parent"}
-        ]
+        ], fList: {click: function(){
+            // Char selected
+            div.selectedChar = this.item();
+            // show page
+            csprev.refresh()
+        }}
     }); ro.appendChild(dp); if (dp.list().length > 0){dp.list()[0].click();}
     // EDIT CHAR, DEL Char
     let ed = createElement({
         type: "span", tags: {innerText: "Edit Character"}, methods: [{type: "click", func: function(){
-            if (dp.input().length === 1){
-                console.log("EDIT_CHAR")
-            }
-            /* TEST */ smEditCharacter(div)
+            if (dp.input().length === 1){ smEditCharacter(div); }
+            /* TEST */
         }}]
     }); ro.appendChild(ed)
     let del = createElement({
-        type: "span", tags: {innerText: "Delete Character"}, methods: [{type: "click", func: function(){
-                if (dp.input().length === 1){
-                    console.log("DEL_CHAR")
-                }
+    type: "span", tags: {innerText: "Delete Character"}, methods: [{type: "click", func: function(){
+        if (dp.input().length > 0){
+        let s = div.story(); let loc = storyList.findIndex(x => x.id === s.id);
+        s.charList = s.charList.filter(x => x.id !== dp.inputElem().childNodes[0].id)
+        if (loc !== -1){storyList[loc] = s};
+        div.openStory(s.id);
+    }
             }}]
     }); ro.appendChild(del)
 }
 
 let left = cre("div","left"); div.appendChild(left)
     let sl = cre("div"); sl.id = "smList"; left.appendChild(sl)
-    sl.createList = function(){
-while (sl.childNodes.length > 0){sl.childNodes[0].remove()}; for (var i=0; i<storyList.length; i++){
+
+
+sl.createList = function(){
+while (sl.childNodes.length > 0){sl.childNodes[0].remove()};
+for (var i=0; i<storyList.length; i++){
     let st = storyList[i]; let o = createElement({
     type: "div", tags: {className: "smStory"}, children: [
         {type: "div", tags: {className: "letter", innerText: st.title[0]}},
         {type: "div", tags: {className: "smsName", innerText: st.title}}
     ], methods: [
-        {type: "click", func: function(){div.openStory(st.id)}}
-    ], data: {id: st.id}
+        {type: "click", func: function(){
+            div.openStory(st.id)
+            let mp = Array.from(sl.childNodes); mp.map(x => x.classList.remove("selected"));
+            o.classList.add("selected")
+            }}
+    ], dataset: { id: st.id }
     });
-                sl.appendChild(o)
-            } // for loop
-        }
+
+sl.appendChild(o)
+} // for loop
+}
+
+
+
     let sb = cre("div"); sb.id = "smMenu"; left.appendChild(sb);
-        let cb = coolButton("Add Text","add","flat");
+        let cb = coolButton("Add Story","add","flat"); cb.onclick = function(){
+            smStoryAdd("content")
+        }
         sb.appendChild(cb); cb.style.flexDirection = "row-reverse";
 
 let right = cre("div","right"); div.appendChild(right);
@@ -116,7 +144,8 @@ let right = cre("div","right"); div.appendChild(right);
 
 c.appendChild(div)
 sl.createList()
-div.openStory("abcd1234")
+
+div.select("abcd1234")
 }
 function smEditCharacter(parent,story,charID){
 if (pd("smCharacterEditor") !== null){pd("smCharacterEditor").remove();}
@@ -153,7 +182,100 @@ ch.onclick = function(){
 
 pd(parent).appendChild(div)
 }
+function smCreateCharacterPopup(parent){
+    let c = coverDiv(parent);
+    let div = createElement({type: "div",
+        tags: {id: "smCCPopup"}, children: [
+            createInput({style: [], type: "input-text", text: "Name of Character", fList: {keyup: function(event){if (event.key === "Enter"){
+                div.childNodes[1].click()
+            }}}}),
+            {type: "div", children: [
+                    ic("check")
+            ], methods: [ {type: "click", func: function(){
+                if (this.previousSibling.getVal().length > 0){
+                let s = pd("storyManager").story();
+                let ch = {id: randomUntil(4,4,s.charList), name: this.previousSibling.getVal(), charOps: []};   s.charList.push(ch); saveLS();
+                c.remove();
+                div.openStory(s.id);
+                } else {toast("Please write the character name in!"); this.previousSibling.inputElem.select()}
+            }}  ]}
+        ]
+    }); c.appendChild(div)
+}
 
+function smStoryAdd(parent,obj){
+    let c = coverDiv(parent);
+    let del = createElement({type: "div", tags: {className: "iconDiv"}, children: [
+            ic("delete"),
+            createElement({type:"span", tags: {innerText: "Delete"}})
+    ], methods: [{type: "click", func: function(){
+        storyList = storyList.filter(x => x.id !== obj.id)
+        saveLS();
+        c.remove();
+        pd("smList").createList();
+    }}]})
+    let sav = createElement({type: "div", tags: {className: "iconDiv"}, children: [
+            ic("save"),
+            createElement({type:"span", tags: {innerText: "Save"}})
+    ], methods: [{type: "click", func: function(){
+        let dt = div.getDetails();
+        if (dt.title){
+            if (obj){
+                storyList[storyList.findIndex(x => x.id === dt.id)] = dt;
+            } else {
+                dt.id = randomUntil(4,4,storyList); dt.charSheet = []; dt.charList = []; dt.storySheet = [];
+                storyList.push(dt);
+            };
+            saveLS(); c.remove();
+            pd("smList").createList();
+            pd("storyManager").select(dt.id)
+        } else {toast("Please name the story!"); pd("smsaName").select()}
+    }}]})
+
+
+let div = createElement({ type: "div", tags: {id: "smStoryAdder"}, children: [
+    {type: "div", tags: {className: "left"}}, // LETTER
+    {type: "div", tags: {className: "center"}, children: [
+        createInput({id: "smsaName", type: "input-text", text: "Story Name", fList: {keyup: function(){
+            let st = div.getDetails();
+            if (st.title) {
+                div.firstElementChild.innerText = st.title[0].toUpperCase();
+            } else {div.firstElementChild.innerText = "";}
+        }}}),
+        createInput({id: "smsaDesc", type: "input-textarea", text: "Description", resize: "none"})
+    ]},
+    {type: "div", tags: {className: "right"}, children: [
+        del, sav
+    ]} // OPTIONS
+        ]
+    });
+
+
+div.getDetails = function(){
+    let story = {};
+    if (pd("smsaName").getVal().length > 0) {story.title = pd("smsaName").getVal();}
+    if (pd("smsaDesc").getVal().length > 0) {story.desc = pd("smsaDesc").getVal();}
+    return story
+}
+div.refresh = function(){ if (div.data){
+    pd("smsaName").value = div.data.title;
+    if (div.data.desc){ pd("smsaDesc").value = div.data.desc;   }
+    div.firstElementChild.innerText = div.data.title[0].toUpperCase();
+}}
+
+let l = div.firstElementChild;
+let r = div.lastElementChild;
+    c.appendChild(div)
+
+
+if (!obj){ del.remove();
+} else {
+    div.data = obj;
+    div.refresh();
+}
+
+    return div
+}
 
 function createModuleManager(parent){
 let c = coverDiv(pd(parent))
@@ -175,6 +297,10 @@ let pane = cre("div","pane");
                 c.style = "padding: 4rem;"
             createPreview(c,div.selectedModule().data());}
         }
+pane.reset = function(){
+    pn.innerText = ""; id.innerText = ""; type.innerText = "";
+    while (pd("mmPreview").childNodes.length > 0){pd("mmPreview").childNodes[0].remove()}
+}
 let prev = cre("div"); prev.id = "mmPreview"
 
 div.appendChild(top); div.appendChild(list); div.appendChild(pane); div.appendChild(prev);
@@ -210,6 +336,8 @@ div.changePreview = function(){
 
 
 c.appendChild(div)
+div.refresh()
+return div
 }
 
 
@@ -287,7 +415,7 @@ let a = createElement({
 type: "div", tags: {id: "mgArticle"}, children: [
     {type: "div", tags: {id: "mgaBody"}},
     {type: "div", tags: {id: "mgaBtnList"}, children: [
-        {type: "div", tags: {className: "mgOption exitBtn", innerText: "HOME"}, methods: [{type:"click",func: function(){
+        {type: "div", tags: {className: "mgOption exitBtn", innerText: "MENU"}, methods: [{type:"click",func: function(){
             ca.remove();
         }}]},
         {type: "div", tags: {className: "mgOption exitBtn", innerText: "EXIT"}, methods: [{type:"click",func: function(){
