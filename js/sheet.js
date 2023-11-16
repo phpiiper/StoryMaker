@@ -45,11 +45,14 @@ function modDragDrop(){
 let target = event.target;
     if (target === null || target.parentNode === null){return}
 
-
+if (target.id === "ssList"){
+    console.log("WOW")
+    if (pd("selectedItem").parentNode.id === "ssList"){return}
+}else {
 while (target !== null && target.parentNode !== null && target.id !== "ssList" && !target.parentNode.classList.contains("coverDiv") && target.parentNode.id !== "ssList" && !target.classList.contains("scmBody") && !target.classList.contains("ssModule")){ target = target.parentNode; };
 
 if (target === null || pd("selectedItem") === null || target.id === "selectedItem" || !target.data().items){return}
-
+}
 
 
 let drag = pd("selectedItem"); let dd = drag.data(); let dl = drag.loc();
@@ -57,10 +60,12 @@ let drag = pd("selectedItem"); let dd = drag.data(); let dl = drag.loc();
 
 
     let dpL = dl.slice(0,-1);
-    let td = target.data();
+    let td = (target.id !== "ssList") ? target.data().id : "MAIN";
     let tl;
     if (target.classList.contains("scmBody")){
         tl = target.previousSibling.loc()
+    } else if (td === "MAIN") {
+        tl = "MAIN"
     } else {tl = target.loc();}
 
 // if parent going in child
@@ -77,7 +82,7 @@ if (dpL.length === 0){
 
 
 o = deleteItem(dpL,dd.id,o,"items");
-o = addItem(td.id,dd,o,"items")
+o = addItem(td,dd,o,"items")
     let new_ind = get_index("id",dd.id,o,"items");
 pd("storySheet").save(o,"order"); pd("ssList").refresh();
     pd("ssList").select(new_ind);
@@ -327,7 +332,11 @@ let js; if (!obj){
 // LEFT Order
 let hd = cre("div"); hd.id = "ssHierarchy"; div.appendChild(hd);
     let hdl = cre("div"); hdl.id = "ssList"; hd.appendChild(hdl);
-        hdl.ondragover = function(){event.preventDefault()};
+        hdl.ondragover = function(){
+            event.preventDefault()
+            };
+        hdl.ondrop = modDragDrop;
+
         hdl.refresh = function(ord){
             let order = div.data().order; if (ord) {order = ord;}
                 while (hdl.childNodes.length > 0){hdl.childNodes[0].remove();}

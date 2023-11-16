@@ -10,9 +10,8 @@ loadLS()
 createStoryManager("content")
 pd(".smStory")[0].click()
 pd(".smOpDiv")[1].click()
+*/
 
-
- */
 /*
 pd("storySheet").refresh(pd("ssList"),
 [

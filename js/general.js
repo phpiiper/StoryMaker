@@ -62,19 +62,15 @@ Typically used to find location based on an item's ID
 */
 /* A few functions from a different project I abandoned */
 function deleteItem(pID,iID,list,parentKey){
-    //parent id, item id
-    //console.log(pID,iID)
-    let ids = [pID,iID]; var array = [] // will contain all elements that will not contain [i]
-    if (ids.includes("MAIN")){ //deleting a home option
+    let ids = [pID,iID]; var array = []
+    if (ids.includes("MAIN")){
         for (var i=0; i<list.length; i++){  if (list[i].id !== ids[1]) {array.push(list[i])} }
-        list = array; // gets all text_list items EXCEPT for the deleting note
+        list = array;
     }
     else{
         let parent_id_loc = get_index("id",ids[0],list,parentKey)
         let parent_insides = get_insides(parent_id_loc,list,parentKey)
         let array = parent_insides.filter(x => x.id !== ids[1]);
-        //console.log("259",parent_id_loc,parent_insides,array)
-        //console.log(parent_id_loc); console.log(get_item(parent_id_loc,list))
         let parent = get_item(parent_id_loc,list,parentKey);
         parent.items = array
     }
@@ -87,6 +83,26 @@ function addItem(pID,obj,list,parentKey){ //parent id, note id
     let addLoc = get_index("id",pID,m,parentKey);
     let addObj = get_item(addLoc,m,parentKey);
     addObj.items.push(ids[1]);
+    return m
+}
+function insertItemAfter(index,pLoc,obj,list,parentKey){
+    let m = list; let ids = [pLoc,obj];
+    let p = (pLoc.length === 0) ? m : get_item(pLoc,m,parentKey)
+    if (pLoc.length === 0){
+        p = p.filter(x => x.id !== obj.id);
+        let p1 = p.slice(0,index);
+        let p2 = p.slice(index);
+        p1.push(obj);
+        p = p1.concat(p2);
+        m = save_item("MAIN",p,m,parentKey)
+    } else {
+        p[parentKey] = p[parentKey].filter(x => x.id !== obj.id);
+        let p1 = p[parentKey].slice(0, index);
+        let p2 = p[parentKey].slice(index);
+        p1.push(obj);
+        p[parentKey] = p1.concat(p2);
+        m = save_item(p.id,p,m,parentKey)
+    }
     return m
 }
 function get_index(key,text,array,parentKey){
@@ -139,6 +155,10 @@ function get_item(location,list,parentKey){
 
 
 function save_item(id,newObj,list,parentKey){
+if (id === "MAIN"){
+    list = newObj;
+    return list
+}
     let folder = get_index("id",id,list,parentKey);
     let item = folder.pop();
 if (folder.length === 0){

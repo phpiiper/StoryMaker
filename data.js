@@ -484,13 +484,23 @@ const ceList = [
         function(){return ic("move_up")},
         {type: "div", tags: {innerText: "Move Up"}}
     ], methods: [{type: "click", func: function(){
-                console.log("up",pd("mmContextDiv").item())
+               let it = pd("mmContextDiv").item();
+               let o = pd("storySheet").order(); let p = it.loc(); let ind = p.pop();
+               if (ind !== 0){
+               o = insertItemAfter(ind-1,p,it.data(),o,"items")
+                pd("storySheet").save(o,"order"); pd("ssList").refresh();
+                pd("mmContextDiv").remove();
+                }
             }}]},
     {type: "div", tags: {className: "mmContextOption"}, children: [
         function(){return ic("move_down")},
         {type: "div", tags: {innerText: "Move Down"}}
     ], methods: [{type: "click", func: function(){
-                console.log("down",pd("mmContextDiv").item())
+                let it = pd("mmContextDiv").item();
+                let o = pd("storySheet").order(); let p = it.loc(); let ind = p.pop();
+                    o = insertItemAfter(ind+1,p,it.data(),o,"items")
+                    pd("storySheet").save(o,"order"); pd("ssList").refresh();
+                    pd("mmContextDiv").remove();
             }}]},
     {type: "div", tags: {className: "mmContextOption"}, children: [
         function(){return ic("delete_forever")},
