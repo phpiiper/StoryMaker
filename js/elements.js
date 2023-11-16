@@ -72,10 +72,13 @@ function pd(parent){
 return p
 }
 function cre(type,className,style){
-let elem = document.createElement(type);
-if (className) {elem.className = className;};
-if (style){elem.style = style;}
-return elem
+    let obj = {type: type};
+    if (className || style){
+        obj.tags = {}
+        if (className) {obj.tags.className = className;}
+        if (style){obj.tags.style = style;}
+    }
+    return createElement(obj);
 }
 
 function createStyleTitle(text,style){
@@ -310,7 +313,7 @@ function createInput(obj){
         inp.value = obj.defaultVal;
     }}
     if (obj.value){
-        if (obj.type.includes("checkbox")){inp.checked = obj.value
+        if (obj.type.includes("check")){inp.checked = obj.value
         } else {
             inp.value = obj.value;
     }}
@@ -321,7 +324,12 @@ function createInput(obj){
         if ("affect" in s && s.affect.includes("parent")){ inpD.style[s.type] = s.val;}
         if ("affect" in s && s.affect.includes("child")){inp.style[s.type] = s.val; }
     }};
-    inp.getVal = function(){return inp.value;}; inpD.getVal = function(){return inp.value}
+    inp.getVal = function(){return inp.value;};
+    inpD.getVal = function(){return inp.value;}
+    if (obj.type.includes("check")){
+        inp.getVal = function(){return inp.checked}
+        inpD.getVal = function(){return inp.checked}
+        }
     return inpD
 }
 
@@ -529,22 +537,19 @@ cell.getDataset = function(key){return JSON.parse(cell.dataset[key])}
     cell.setDataset("data",c)
 
 cell.onclick = function(){
-if (pd("selectedCell") !== null){pd("selectedCell").id = ""}; this.id = "selectedCell";
-//console.log(pd("mcptPopup"))
-if (pd("mcptPopup") !== null){
-    let r = pd("mcptPopup"); //console.log(r.loc(),this.loc())
-    if (r.loc().toString() !== this.loc().toString()) {
-        r.changeLoc(this.loc());
-        r.refresh(cell.getDataset("data").style)
-    } //; console.log(r.loc())
-    return
-}
-    let pop = cre("div"); pop.id = "mcptPopup";
-    //this.table().parentNode.appendChild(pop);
-    pd("mcRightDiv").appendChild(pop)
-    let top = cre("div",undefined,"width: 100%; height: 2em; background-color: black; display: flex; align-items: center; justify-content: right;");
-    pop.appendChild(top)
-    let x = cre("div",undefined,"padding: 0.25em; padding-right: 0.5em; cursor: pointer; color: white;"); x.onclick = function(){pop.remove()}; top.appendChild(x); x.innerText = "X";
+    if (pd("selectedCell") !== null){pd("selectedCell").id = ""};
+    cell.id = "selectedCell"; let r = pd("mcptPopup");
+if (r !== null){
+    if (!r.loc || r.loc().toString() !== cell.loc().toString()) {
+        pd("mcptPopup").remove()
+    }
+}  // REFRESH?
+let pop = cre("div"); pop.id = "mcptPopup"; pd("mcRightDiv").appendChild(pop)
+
+let top = cre("div",undefined,"width: 100%; height: 2em; background-color: black; display: flex; align-items: center; justify-content: right;");
+        pop.appendChild(top)
+let x = cre("div",undefined,"padding: 0.25em; padding-right: 0.5em; cursor: pointer; color: white;"); x.onclick = function(){pop.remove()};
+        top.appendChild(x); x.innerText = "X";
 // POSITION CORRECTLY
 // OPTIONS
 let slctObj = table.findCell(this.loc()).data();
@@ -552,8 +557,7 @@ let slctObj = table.findCell(this.loc()).data();
     let r1 = {style: "display: flex; width: calc(100% - 1em); margin: 0.5em;", className: "packRow", childStyle: {}, children: [
             {name: "type", type: "dropdown", obj: {
                     type: "dropdown-static", text: "Type", ops: ["Title","Input"], style: [],
-                    fList: {click: function(){ptSave()}},
-                    defaultVal: this.table().findCell(location).data().type
+                    fList: {click: function(){ptSave()}}
                 }},
             {name: "color", type: "input", obj: {
                     type: "input-color", text: "Color", style: [
@@ -566,7 +570,7 @@ let slctObj = table.findCell(this.loc()).data();
                     fList: {input: function(){ptSave()}}
                 }},
             {name: "value", type: "input", obj: {
-                    type: "input-text", text: "Text", style: [{type: "width", val: "100%", affect: "parent"}, {type: "borderRadius", val: "0", affect: "child"}], defaultVal: this.table().findCell(location).data().type,
+                    type: "input-text", text: "Text", style: [{type: "width", val: "100%", affect: "parent"}, {type: "borderRadius", val: "0", affect: "child"}],
                     fList: {keyup: function(){ptSave()}}
                 }}
         ]}; let row1 = createPackRow(r1,slctObj.style); pop.appendChild(row1);
@@ -575,13 +579,13 @@ let slctObj = table.findCell(this.loc()).data();
                     type: "input-text", text: "Font Family", style: [
                         {type: "borderRadius", val: 0, affect: "child"},
                         {type: "borderRight", val: "none", affect: "child"}
-                    ], defaultVal: "Noto Sans",
+                    ],
                     fList: {keyup: function(){ptSave()}}
                 }},
             {name: "fontSize", type: "input", obj: {
                     type: "input-text", text: "F. Size", style: [
                         {type: "width", val: "5em", affect: "parent"}, {type: "borderRadius", val: "0", affect: "child"}
-                    ], defaultVal: "1em",
+                    ],
                     fList: {keyup: function(){ptSave()}}
                 }},
             {name: "backgroundColor", type: "input", obj: {
@@ -590,7 +594,7 @@ let slctObj = table.findCell(this.loc()).data();
                         {type: "padding", val:"0 0.1em", affect: "child"},
                         {type: "borderRadius", val: "0", affect: "child"},
                         {type: "borderLeft", val: "none", affect: "child"}
-                    ], defaultVal: "#ffffff",
+                    ],
                     fList: {input: function(){ptSave()}}
                 }}
         ]}; let row2 = createPackRow(r2,slctObj.style); pop.appendChild(row2);
@@ -615,6 +619,8 @@ let slctObj = table.findCell(this.loc()).data();
                 ]}
         ]}; let row3 = createPackRow(r3,slctObj.style); pop.appendChild(row3);
 
+
+
 pop.table = function(){return table}
 pop.changeLoc = function(x){location = x;}
 pop.loc = function(){return location}
@@ -627,15 +633,14 @@ pop.getStyles = function(){ //let c = table.findCell(location);
     return list
 };
 pop.refresh = function(styleList){
-    //console.log(this.loc(),styleList)
-    for (var i=1; i<pop.childNodes.length;i++){ pop.childNodes[i].refresh(styleList); }
+    for (var i=1; i<pop.childNodes.length;i++){
+         pop.childNodes[i].refresh(styleList);
+    }
 }
 
 
 pop.refresh(cell.getDataset("data").style)
-//console.log(pop.loc())
-    //console.log("HOLA")
-}; // onclick popup
+}; // cell onclick: popup
 return cell
 }
 
@@ -680,10 +685,18 @@ let op = cre("div","opdOp"); opd.appendChild(op); let a = arr[i]
         }
     return arr
     }
-    opd.refresh = function(ops){ let d = getDataset(opd,"data"); d[1] = ops; d[0].dataset.data = JSON.stringify(d[1]);
-        for (var i=0; i<opd.childNodes.length; i++){ let oc = opd.childNodes[i];
-        if (JSON.stringify(d[1]) === JSON.stringify(oc.data().value)){oc.classList.add("selected");
-        } else {oc.classList.remove("selected")}
+    opd.refresh = function(ops){
+    let d = getDataset(opd,"data");
+    for (var i=0; i<opd.childNodes.length; i++){
+    let oc = opd.childNodes[i]; let dt = oc.data().value;
+    let includes = true;
+    for (key in dt){if (!ops[key] || dt[key] !== ops[key]){
+        includes = false; break;
+        }}
+
+    //console.log(includes,dt,ops)
+    if (includes){  oc.classList.add("selected");
+    } else {oc.classList.remove("selected")}
         }
        // console.log(ops)
     };
@@ -708,45 +721,65 @@ let op = cre("div","opdOp"); opd.appendChild(op); let a = arr[i]
 
 /* EXTRAS */
 function createElement(obj){
-let elem;
+    let elem;
 // IF already made
-if (obj.nodeName) { return obj; }
+    if (obj.nodeName) { return obj; }
+    if (typeof obj === "function"){
+        return obj()
+    }
 // Create Elem: --> input-text, div, button, p, etc
-if (obj.type.includes("-")){
-    elem = cre(obj.type.split("-")[0]);
-    elem.type = obj.type.split("-")[1]
-} else {elem = cre(obj.type)}
+    if (typeof obj.type === "function"){
+        elem = obj.type();
+    } else if (obj.type.includes("-")){
+        elem = cre(obj.type.split("-")[0]);
+        elem.type = obj.type.split("-")[1]
+    } else {elem = document.createElement(obj.type);}
 
 // DATASETS if exist
-if (obj.dataset){
-    for (key in obj.dataset){elem.dataset[key] = obj.dataset[key]}
-}
+    if (obj.dataset){
+        for (key in obj.dataset){elem.dataset[key] = obj.dataset[key]}
+    }
 // Tags
-if (obj.tags){ for (key in obj.tags){
-    elem[key] = obj.tags[key];
-}}
+    if (obj.tags){ for (key in obj.tags){
+        elem[key] = obj.tags[key];
+    }}
 // STYLES
-if (obj.styles){ for (key in obj.styles){
-    elem[key] = obj.styles[key];
-}}
+    if (obj.styles){ for (key in obj.styles){
+        elem[key] = obj.styles[key];
+    }}
 // IF METHODS/functions
-if (obj.methods){ for (var i=0;i<obj.methods.length; i++){
-    let om = obj.methods[i];
-    // TYPE1 --> eventlistener
-    if (om.type){elem.addEventListener(om.type,om.func)}
-    // TYPE2 --> tagElem
-    if (om.name){elem[om.name] = om.func}
-}}
+    if (obj.methods){
+        for (var i=0;i<obj.methods.length; i++){
+            let om = obj.methods[i];
+            // TYPE1 --> eventlistener
+            if (om.type){elem.addEventListener(om.type,om.func)}
+            // TYPE2 --> tagElem
+            if (om.name){elem[om.name] = om.func;}
+        }}
 // Children
-if (obj.children){
-    for (var i=0; i<obj.children.length; i++){
-        if (obj.children[i].nodeName){
-            elem.appendChild(obj.children[i])
-        } else {// if an element
-        elem.appendChild(createElement(obj.children[i]))
-        } // else, an obj to be created
-}}
+    if (obj.children){
+        for (var i=0; i<obj.children.length; i++){
+            if (obj.children[i].nodeName){
+                elem.appendChild(obj.children[i])
+            } else if (typeof obj.children[i] === "function"){
+                elem.appendChild(createElement(obj.children[i]()));
+            }else {// if an element
+                elem.appendChild(createElement(obj.children[i]))
+            } // else, an obj to be created
+        }}
 
+// Methods for all elements
+    if (elem.nodeName === "DIV"){
+        elem.cl = function(){
+            return Array.from(elem.childNodes);
+        }
+        elem.getData = function(name){
+            return JSON.parse(elem.dataset[name]);
+        }
+        elem.saveData = function(obj,name){
+            elem.dataset[name] = JSON.stringify(obj);
+        }
+    }
 
-return elem
+    return elem
 }

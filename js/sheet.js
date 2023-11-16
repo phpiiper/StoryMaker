@@ -44,50 +44,48 @@ function modDragStart(){
 function modDragDrop(){
 let target = event.target;
     if (target === null || target.parentNode === null){return}
-while (target !== null && target.parentNode !== null && target.id !== "ssList" && !target.parentNode.classList.contains("coverDiv") && target.parentNode.id !== "ssList"){target = target.parentNode};
+
+
+while (target !== null && target.parentNode !== null && target.id !== "ssList" && !target.parentNode.classList.contains("coverDiv") && target.parentNode.id !== "ssList" && !target.classList.contains("scmBody") && !target.classList.contains("ssModule")){ target = target.parentNode; };
 
 if (target === null || pd("selectedItem") === null || target.id === "selectedItem" || !target.data().items){return}
 
+
+
 let drag = pd("selectedItem"); let dd = drag.data(); let dl = drag.loc();
+
+
+
     let dpL = dl.slice(0,-1);
-    let td = target.data(); let tl = target.loc();
+    let td = target.data();
+    let tl;
+    if (target.classList.contains("scmBody")){
+        tl = target.previousSibling.loc()
+    } else {tl = target.loc();}
+
+// if parent going in child
+    if (dl.toString() === tl.toString()){return;}
+    if (dl.toString() === tl.slice(0,-1).toString()){return;}
+    //if (tl.toString() === dl.slice(0,-1).toString()){return;}
 
 let o = pd("storySheet").order();
 if (dpL.length === 0){
     dpL = "MAIN"
 } else {
-    dpL = get_item(dpL,o,"id").id;
-}
-
-o = deleteItem(dpL,dd.id,o); o = addItem(td.id,dd,o)
-
-pd("storySheet").save(o,"order"); pd("ssList").refresh()
-target = null;
+    dpL = get_item(dpL,o,"items").id;
 }
 
 
+o = deleteItem(dpL,dd.id,o,"items");
+o = addItem(td.id,dd,o,"items")
+    let new_ind = get_index("id",dd.id,o,"items");
+pd("storySheet").save(o,"order"); pd("ssList").refresh();
+    pd("ssList").select(new_ind);
 
-
-
-/*
-function scGetElemParent(div){ if (div.id === "schList"){return div}
-    while (!div.classList.contains("scModule")){
-        while (div.parentNode.classList.contains("scmBody")){div = div.parentNode;}
-        if (div.previousSibling !== null){div = div.previousSibling}
-    }
-    return div
-} */
-function scGetElemParentsList(div){ let arr = []; if (div.id === "schList"){return []}
-    if (div.classList.contains("scModule") && !div.parentNode.classList.contains("scmBody")){arr.push(div); return arr}
-    if (div.previousSibling !== null && div.previousSibling.classList.contains("scModule")) {arr.push(div.previousSibling)};
-    while (!div.classList.contains("scModule")){
-        while (div.parentNode.classList.contains("scmBody")){div = div.parentNode;
-            if (div.previousSibling !== null && div.previousSibling.classList.contains("scModule")) {arr.push(div.previousSibling)};}
-        if (div.previousSibling !== null){div = div.previousSibling;}
-    }
-    arr = arr.reverse()
-    return arr
+target = null; drag = null;
 }
+
+
 
 
 
@@ -203,7 +201,8 @@ function createFlipcard(obj){ let div = document.createElement("div"); div.class
     return div
 }
 
-function createBar(obj){ let div = cre("div","barDiv"); div.dataset.data = JSON.stringify(obj); console.log(obj);
+/*
+function  a(obj){ let div = cre("div","barDiv"); div.dataset.data = JSON.stringify(obj); console.log(obj);
     // TYPE RANGE
     let main = cre("div","barMain"); div.appendChild(main);
     // WIDTH HEIGHT
@@ -247,16 +246,16 @@ function createBar(obj){ let div = cre("div","barDiv"); div.dataset.data = JSON.
     // calc(max(min(55.5556% - 0.5em, 100%), (0% - 30px)))
     // calc(max(min(55.55555555555556% - (0.5em), 100% - 50px),0% ))
     let leftpos = "calc(max(min(" + obj.value/(obj.end-obj.start)*100 + "% - " + padding + " - " + "calc(" + bgc.width + "/2), 100% - calc(" + bgc.width + "/2) ), 0% ))"; console.log(leftpos)
-    /* pos */   block.style.left = leftpos;
+    //   block.style.left = leftpos;
     //STYLES
-    /*
-    if (obj.style){for (key in obj.style){
-        if (!["width","height"].includes(key)){main.style[key] = obj.style[key];}}
-    } */
+    //
+    //if (obj.style){for (key in obj.style){
+    //    if (!["width","height"].includes(key)){main.style[key] = obj.style[key];}}
+    //}
 
     return div
 }
-
+*/
 
 
 
@@ -331,9 +330,29 @@ let hd = cre("div"); hd.id = "ssHierarchy"; div.appendChild(hd);
         hdl.ondragover = function(){event.preventDefault()};
         hdl.refresh = function(ord){
             let order = div.data().order; if (ord) {order = ord;}
-            while (hdl.childNodes.length > 0){hdl.childNodes[0].remove();}
+                while (hdl.childNodes.length > 0){hdl.childNodes[0].remove();}
             for (var i=0; i<order.length; i++) { hdl.appendChild(ssCreateItem(order[i])); }
             pv.refresh();
+        }
+        hdl.select = function(loc){
+        // open up to this option, then click
+        //console.log(loc)
+                let elemClick = hdl.childNodes[loc[0]];
+                if (loc.length === 1){elemClick.click()}
+                else {elemClick.openFolder();}
+                for (var i=1; i<loc.length; i++){
+                    elemClick = elemClick.nextSibling.childNodes[loc[i]];
+                    if (elemClick.openFolder){
+                        if (i === loc.length-1){hdl.item = elemClick;}
+                        elemClick.openFolder();
+                    } else {
+                        elemClick.click();
+                        hdl.item = elemClick;
+                        hdl.itemData = elemClick.data();
+                        return
+                    }
+                }
+
         }
     let menu = cre("div"); menu.id = "sshMenu"; hd.appendChild(menu);
         let tx = ic("menu"); menu.appendChild(tx);
@@ -380,11 +399,8 @@ c.appendChild(div)
 
 function createSSpopup(obj){
     let pop = cre("div"); pop.id = "sshPopup";
-    let crb = coolButton("Create Story Sheet","save_as"); crb.classList.add("schmpOption");
+    let crb = coolButton("Save Story Sheet","save_as"); crb.classList.add("schmpOption");
         crb.style = "border-radius: 0; width: 100%;";
-    if (obj && obj.storySheet && obj.storySheet.length > 0){
-        crb = coolButton("Edit Story Sheet","save_as")
-    }
     pop.appendChild(crb);
     crb.onclick = function(){
         obj.storySheet = pd("storySheet").order();
@@ -424,8 +440,11 @@ return pop
 
 
 function ssStyleList(elem){ //console.log(elem)
-let p = pd("scStyleList"); while (p.childNodes.length > 0){p.childNodes[0].remove();}
+let p = pd("scStyleList");
+    if (p !== null && p.itemData && p.itemData.id === elem.data().id){return}
+    while (p.childNodes.length > 0){p.childNodes[0].remove();}
     p.item = elem;
+    p.itemData = JSON.parse(elem.dataset.data);
 let obj = elem.data()
 let styles = obj.style
 
@@ -453,8 +472,8 @@ let styles = obj.style
         let o = pd("storySheet").order();
             let itemLoc = get_index("id",newItem.id,o,"items")
             o = save_item(newItem.id,newItem,o,"items");
-            pd("ssList").refresh(o);
 
+            pd("ssList").refresh(o);
             ssCreatePreview(pd("storySheet").order(),pd("scPreview"),itemLoc);
     } // onkeyup
     p.refresh = function(s){
@@ -532,12 +551,12 @@ let allPack = [
         type: "input-color", style: [ {type: "width", val: "2.45em", affect: "parent"}, {type: "height", val: "2.45em", affect: "child"}, {type: "padding", val: "0", affect: ["parent","child"]}, {type: "border", val: "none", affect: ["child"]}, {type: "marginBottom", val: "0", affect: "parent"}, {type: "backgroundColor", val: "rgba(0,0,0,0)", affect: "child"} ], defaultVal: "#000", text: "Background", textStyle: "font-size: 0.6em; margin-left: 1px;", defaultVal: "#ffffff"
     }},
     { name: "opacity", type: "input", obj: {
-        text: "Opacity", type: "input-range", style: [{type: "margin", val: "0.25em", affect: "parent"}, {type: "padding", val: 0, affect: "child"}, {type: "backgroundColor", val: "#000000", affect: "child"}, {type: "justifyContent", val: "center", affect: "parent"}, {type: "width", val: "calc(50% - 3.25em)", affect: "parent"}
+        text: "Opacity", type: "input-range", style: [{type: "margin", val: "0.25em", affect: "parent"}, {type: "padding", val: 0, affect: "child"}, {type: "backgroundColor", val: "#000000", affect: "child"}, {type: "justifyContent", val: "center", affect: "parent"}, {type: "width", val: "calc(50% - 3.25em)", affect: "parent"}, {type: "padding-top", val: "1rem", affect: "parent"}, {type: "padding-bottom", val: "1rem", affect: "parent"}
         ],
             max: 100, min: 0, step: 1, defaultVal: "100"
     }},
     { name: "borderRadius", type: "input", obj: {
-        text: "Roundness", type: "input-range", style: [{type: "margin", val: "0.25em", affect: "parent"}, {type: "padding", val: 0, affect: "child"}, {type: "backgroundColor", val: "#000000", affect: "child"}, {type: "justifyContent", val: "center", affect: "parent"}, {type: "width", val: "calc(50% - 3.25em)", affect: "parent"}
+        text: "Roundness", type: "input-range", style: [{type: "margin", val: "0.25em", affect: "parent"}, {type: "padding", val: 0, affect: "child"}, {type: "backgroundColor", val: "#000000", affect: "child"}, {type: "justifyContent", val: "center", affect: "parent"}, {type: "width", val: "calc(50% - 3.25em)", affect: "parent"}, {type: "padding-top", val: "1rem", affect: "parent"}, {type: "padding-bottom", val: "1rem", affect: "parent"}
         ],
             max: 100, min: 0, step: 0.5, defaultVal: "0",
     }}
@@ -559,6 +578,7 @@ p.appendChild(p3); p3.classList.add("packRowGroup");
 
 function ssCreateItem(obj){
 let order = pd("storySheet").order();
+// console.log(obj)
 
 if (typeof obj === "string"){
     if (obj === "text"){
@@ -577,7 +597,7 @@ if (typeof obj === "string"){
         }, items: []};
     }
 }
-else if (typeof obj === "object" && obj.type.includes("-")) { //console.log("576",obj)
+else if (typeof obj === "object" && obj.type.includes("-")) { //console.log("576",obj))
     obj = {id: randomUntil(4,4,order), type: "module", title: obj.name, mID: obj.id,
          style: {
 
@@ -607,7 +627,7 @@ let i = cre("div","ssModule"); i.dataset.data = JSON.stringify(obj);
         i.save(data);
     }
     i.loc = function(){
-        return get_index("id",i.data().id,pd("storySheet").order(),"items")
+        return get_index("id",i.data().id,pd("storySheet").order(),"items");
     }
     i.get = function(key){
         return i.data()[key]
@@ -685,7 +705,6 @@ if (obj.type === "group"){
 i.ondblclick = function(){
     i.toggleFolder()
 }
-
 }// if group
 
 
@@ -695,21 +714,40 @@ i.ondblclick = function(){
 i.addEventListener("click",function(){
     ssStyleList(i);
     selectDiv("ssModule","stay");
-    if (pd("scContextMenu") !== null){pd("scContextMenu").remove()}
+    //console.log(i)
+    // if (pd("scContextMenu") !== null){pd("scContextMenu").remove()}
 });
 
 /* DRAGGABLE */
 i.draggable = true; i.ondragstart = modDragStart;
 i.ondragend = function(){i.id = ""}
-/* onContextMEnu */
-i.oncontextmenu = function(){event.preventDefault(); scContextMenu(i);}
-/* dragover */
+i.oncontextmenu = function(event) {
+    event.preventDefault();
+    modContextMenu(i);
+}
 i.ondragover = function(){event.preventDefault()};
 i.ondrop = modDragDrop;
 
 
 return i;
 }
+
+function modContextMenu(item){
+    if (pd("mmContextDiv")){pd("mmContextDiv").remove();}
+    let cd = createElement(ceList.find(x => x.i==="mmContextDiv"));
+        pd("storySheet").appendChild(cd);
+    cd.style.top = item.getBoundingClientRect().y-10 + "px";
+    cd.style.left = item.getBoundingClientRect().width+2 + "px";
+    cd.item = function(){return item};
+
+    function removeIf(){
+        let elem = event.target
+        while (elem.id !== "mmContextDiv" && elem.id !== "storyManager"){elem = elem.parentNode;}
+        if (elem !== cd){cd.remove(); document.removeEventListener("click",removeIf)}
+    }
+    document.addEventListener("click",removeIf)
+}
+
 
 
 
@@ -725,11 +763,10 @@ let ss = pd("storySheet");
             else if (key === "opacity"){ div.style[key] = JSON.parse(mod.style[key])/100;}
             else if (key === "borderRadius"){ div.style[key] = mod.style[key] + "px"}
             else if (key.includes("toggle-")){
-                if (mod.style[key] !== "on"){
-                div.style[key.split("-")[1]] = undefined}
+                if (mod.style[key] === false){div.style[key.split("-")[1]] = undefined;}
             }
-            else {div.style[key] = mod.style[key]}
-        }}
+            else { if (mod.style["toggle-"+key] !== false){div.style[key] = mod.style[key];}
+        }}}
         p.appendChild(div)
         if (mod.type === "text") { //console.log("text")
             div.style.display = "flex";
@@ -749,6 +786,7 @@ let ss = pd("storySheet");
 if (ss.order().length > 0){ ss.save(ss.order(),"order"); }
 
 if (loc){ // open up to this option, then click
+//console.log(loc)
     let elemClick = pd("ssList").childNodes[loc[0]];
         if (loc.length === 1){elemClick.click()}
         else {elemClick.openFolder();}
@@ -758,9 +796,9 @@ if (loc){ // open up to this option, then click
             if (i === loc.length-1){pd("ssList").item = elemClick;}
             elemClick.openFolder();
         } else {
-            if (pd("scStyleList").item.data().id === get_item(loc, ss.order(), "items").id){return}
             elemClick.click();
             pd("ssList").item = elemClick;
+            pd("ssList").itemData = elemClick.data();
             return
         }
     }
@@ -769,92 +807,68 @@ if (loc){ // open up to this option, then click
 
 
 
-function scContextMenu(obj){
-    let m = document.getElementById("scContextMenu"); if (m !== null) {if (obj.id === JSON.parse(m.dataset.data).id){m.remove(); return}; m.remove();} // MOVE
-    let tg = event.currentTarget; let tgcr = tg.getBoundingClientRect(); tg.click();
-
-    // create
-    m = document.createElement("div"); m.id = "scContextMenu"; pd("storyCreator").appendChild(m); m.dataset.data = JSON.stringify(obj)
-    let row1 = document.createElement("div"); row1.className = "sccmRow"; m.appendChild(row1);
-    let up = iconButton("","arrow_drop_up"); row1.appendChild(up); up.dataset.data = "Move Up";
-    let row3 = document.createElement("div"); row3.className = "sccmRow"; m.appendChild(row3);
-    let down = iconButton("","arrow_drop_down"); row3.appendChild(down); down.dataset.data = "Move Down";
-    let row2 = document.createElement("div"); row2.className = "sccmRow"; m.appendChild(row2);
-    let tr = iconButton("","delete"); row2.appendChild(tr); tr.dataset.data = "Delete Item";
-
-    up.onclick = function(){ let order = getSCOrder(); let index = get_index("id",obj.id,order,"items")
-        let slct = pd("scOpenItem"); let prev = slct.previousSibling;
-        if (prev !== null && prev.classList.contains("scModule")){
-            if (slct.parentNode.id === "schList" && prev.parentNode.id === "schList"){
-                if (slct.nextSibling !== null && slct.nextSibling.classList.contains("scmBody")){slct.ondblclick()}
-                slct.after(prev); scCreatePreview(getSCOrder(),pd("scPreview"))
-            }
-            else { let ds = getDataset(slct,"data"); let dp = getDataset(prev,"data");
-                slct.after(prev); let items = [];
-                for (var i=0; i<slct.parentNode.childNodes.length; i++){items.push(JSON.parse(slct.parentNode.childNodes[i].dataset.data))}
-                let pID = slct.parentNode.dataset.id;
-                let order = getSCOrder(); let index = get_index("id",JSON.parse((scGetElemParentsList(prev)).at(-1).dataset.data).id,order,"items"); index.pop()
-                for (var i=0; i<items.length; i++){scMoveItem(order,index,items[i])}
-                scRefreshList(order,index)
-            }
-        } else if (prev !== null && prev.classList.contains("scmBody")){
-            prev.previousSibling.ondblclick(); up.click();
-        } else {console.log("err",slct,prev); return}
-    }; down.onclick = function(){let order = getSCOrder(); let index = get_index("id",obj.id,order,"items")
-        let slct = pd("scOpenItem"); let next = slct.nextSibling;
-        if (next !== null && next.classList.contains("scModule")){
-            if (slct.parentNode.id === "schList" && next.parentNode.id === "schList"){
-                if (slct.previousSibling !== null && slct.previousSibling.classList.contains("scmBody")){slct.ondblclick()}
-                slct.after(next); scCreatePreview(getSCOrder(),pd("scPreview"))
-            }
-            else { let ds = getDataset(slct,"data"); let dp = getDataset(next,"data");
-                slct.after(next); let items = [];
-                for (var i=0; i<slct.parentNode.childNodes.length; i++){items.push(JSON.parse(slct.parentNode.childNodes[i].dataset.data))}
-                let pID = slct.parentNode.dataset.id;
-                let order = getSCOrder(); let index = get_index("id",JSON.parse((scGetElemParentsList(next)).at(-1).dataset.data).id,order,"items"); index.pop()
-                for (var i=0; i<items.length; i++){scMoveItem(order,index,items[i])}
-                scRefreshList(order,index)
-            }
-        } else if (next !== null && next.classList.contains("scmBody")){
-            next.nextSibling.ondblclick(); up.click();
-        } else {console.log("err",slct,next); return}
-
-    }; tr.onclick = function(){
-        let order = getSCOrder(); let del = obj.id; let index = get_index("id",obj.id,order,"items"); index.pop(); let pt = get_item(index,order);
-        if (del === pt.id){order = deleteItem("MAIN",del,order); }
-        else {order = deleteItem(pt.id,del,order);}
-        scRefreshList(order,index)
-    };
-    m.style.top = (tgcr.y+tgcr.height) + "px"
-
-    pd("content").onclick = function(){ if (!event.currentTarget.classList.contains("scModule")){m.remove(); pd("content").onclick = null}; tg.id = "";}
-}
-
-
-
 function ssModulePicker(order){
 let c = coverDiv(pd("storySheet").parentNode);
-console.log("PCIKER")
 let div = createElement({ type: "div", tags: {id: "ssModulePicker"}
 });
 
-let prev = cre("div"); prev.id = "ssMPPreview"; div.appendChild(prev);
-let ops = cre("div"); ops.id = "ssMMOptions"; div.appendChild(ops);
+let top = createElement({type:"div", tags: {className: "top"}, children: [
+        {type: "span", tags: {innerText: "Select A Module", className: "ssmpOpDiv"}},
+        {type: "span", tags: {innerText: "SELECT", className: "ssmpOpDiv"}, methods: [{type: "click", func: function(){
+            let lis = Array.from(pd("ssMMList").childNodes);
+            if (lis.find(x => x.classList.contains("selected"))){
+                let mod = lis.find(x => x.classList.contains("selected"));
+                //console.log(mod.data());
+                pd("ssList").appendChild(ssCreateItem(mod.data()));
+                pd("ssList").refresh(pd("storySheet").order())
+                c.remove()
+            } else {toast("Select a module!");}
+        }}]}
+]}); div.appendChild(top)
+
+
+
 let lis = cre("div"); lis.id = "ssMMList"; div.appendChild(lis);
 for (var i=0; i<modList.length; i++){
-    lis.appendChild(mmCreateModule(modList[i]))
+    let md = mmCreateModule(modList[i])
+    md.select = function(slct){
+        let lis = Array.from(md.parentNode.childNodes);
+        if (lis.findIndex(x => x.classList.contains("selected")) !== -1){
+            lis.find(x => x.classList.contains("selected")).classList.remove("selected");
+        }
+        slct.classList.add("selected")
+    }
+    md.onclick = function(){
+        md.select(md);
+        dt.refresh(md.data());
+        while (prev.childNodes.length>0){prev.childNodes[0].remove();}
+        createPreview(prev,md.data());
+
+    }
+    lis.appendChild(md);
 }
+
+
+let bot = cre("div","bot"); div.appendChild(bot);
+    let dt = cre("div","details"); bot.appendChild(dt);
+        let dtp = cre("div"); dtp.innerText = "NAME: ---"; dt.appendChild(dtp);
+        let dti = cre("div"); dti.innerText = "ID: ---"; dt.appendChild(dti);
+        let dtt = cre("div"); dtt.innerText = "TYPE: ---"; dt.appendChild(dtt);
+        dt.refresh = function(data){
+            dtp.innerText = "NAME: " + data.name;
+            dti.innerText = "ID: " + data.id;
+            let t1 = data.type.split("-")[0]; t1 = t1[0].toUpperCase() + t1.substring(1);
+            let t2 = data.type.split("-")[1]; t2 = t2[0].toUpperCase() + t2.substring(1);
+            let type = t1 + "-" + t2;
+            dtt.innerText = "Type: " + type;
+        }
+    let prev = cre("div","preview"); bot.appendChild(prev);
+
 
 
     c.appendChild(div)
     return div;
 }
-
-
-
-
-
-
 
 
 
@@ -970,176 +984,3 @@ function getSHOrder(){
 }
 
 
-function getSHstyleList(){ let list = {};
-    // TEXT
-    let vl = pd("shValue"); if (vl !== null && vl.value.length > 0){list["value"] = vl.value} /* value */
-    let ff = pd("shFontFamily"); if (ff !== null && ff.value.length > 0){list["fontFamily"] = ff.value} /* font family */
-    let fs = pd("shFontSize"); if (fs !== null && fs.value.length > 0){list["fontSize"] = fs.value} /* font size */
-    let fc = pd("shFontColor"); if (fc !== null && fc.value.length > 0){list["color"] = fc.value} /* font size */
-    let ta = pd("shAlignText"); if (ta !== null && ta.value.length > 0){list["justifyContent"] = ta.value} /* text align */
-    let pt = pd("shPositionText"); if (pt !== null && pt.value.length > 0){list["alignItems"] = pt.value} /* text align */
-    /* GROUP */
-    let ag = pd("shgAlignment"); if (ag !== null && ag.inputElem.childNodes.length > 0){list["item-alignment"] = ag.inputElem.childNodes[0].innerText} /* text align */
-// BIU
-    let biu = pd("shBIU"); if (biu !== null){ let biuD = biu.dataset.data
-        for (key in biuD){list[key] = biuD[key]}
-    }
-
-
-// ALL
-    if (pd("shNormalOptions") !== null){
-        list = pd("shNormalOptions").list()
-    }
-    else {
-        let wd = pd("shWidth"); if (wd !== null && wd.value.length > 0){list["width"] = wd.value}
-        let ht = pd("shHeight"); if (ht !== null && ht.value.length > 0){list["height"] = ht.value}
-        let pa = pd("shPadding"); if (pa !== null && pa.value.length > 0){list["padding"] = pa.value}
-        let ma = pd("shMargin"); if (ma !== null && ma.value.length > 0){list["margin"] = ma.value}
-        let bc = pd("shBackgroundCol"); if (bc !== null && bc.value.length > 0){list["backgroundColor"] = bc.value}
-        let bd = pd("shBorder"); if (bd !== null && bd.value.length > 0){list["border"] = bd.value}
-    }
-//console.log(list)
-    return list
-}
-function shStyleList(elem,obj){ let ed = getDataset(elem,"data"); let div = document.getElementById("shStyleList"); if (div !== null) {while(div.childNodes.length > 0){div.childNodes[0].remove()}} else {div = document.createElement("div"); div.id = "shStyleList";}
-    pd("shStyleDiv").appendChild(div); div.itemID = JSON.parse(elem.dataset.data).id; div.parentNode.parentNode.itemID = div.itemID;
-    function shSLSave(){
-        let sl = getSHstyleList();
-        let d = getDataset(elem,"data");
-
-        d[1].style = sl; d[0].dataset.data = JSON.stringify(d[1]);
-        let newOrder = save_item(d[1].id,d[1],getSHOrder(),"items");
-        let sp = pd("shPreview"); shRefreshList(newOrder,get_index("id",d[1].id,newOrder),d[1].id);
-        let item = get_item(get_index("id",d[1].id,getSHOrder()),getSHOrder());
-        /* console.log(item); */ return item
-    }
-//console.log(elem,obj)
-
-    let hlp = createStyleTitle("VARIABLES Help","background-color: black; color: white; cursor: pointer"); div.appendChild(hlp);
-    // FLIPCARD
-    if (obj.type === "flipcard"){
-        let ft = createStyleTitle("Flipcard Options"); div.appendChild(ft);
-        let flipSelectDiv = document.createElement("div"); flipSelectDiv.style = "padding: 0.5em; border: 3px solid black; border-radius: 2px; margin: 0.25em;"; div.appendChild(flipSelectDiv)
-        let cf = document.createElement("div"); cf.id = "shsFlipSelect"; flipSelectDiv.appendChild(cf); cf.innerText = obj.cards[0].name; cf.dataset.data = JSON.stringify({id: 0, cards: obj.cards});
-        cf.onclick = function(){ let cfd = getDataset(cf,"data");
-            let newID = cfd[1].id+1; if (cfd[1].cards.length-1 < newID){newID = 0;};
-            cfd[1].id = newID; cf.dataset.data = JSON.stringify(cfd[1]);
-            let newSt = cfd[1].cards[newID].style;
-            //console.log(newSt)//
-            let v = pd("shfsValue"); if ("value" in newSt){v.value = newSt.value} else {v.value = ""}
-            let bc = pd("shfsBackgroundCol"); if ("backgroundColor" in newSt){bc.value = newSt.backgroundColor;} else {bc.value = ""}
-            let fc = pd("shfsFontColor"); if ("color" in newSt){fc.value = newSt.color} else {fc.value = ""}
-            let ff = pd("shfsFontFamily"); if ("fontFamily" in newSt){ff.value = newSt.fontFamily} else {ff.value = ""}
-            let fs = pd("shfsFontSize"); if ("fontSize" in newSt){fs.value = newSt.fontSize} else {fs.value = ""}
-            let at = pd("shfsAlignText"); if ("justifyContent" in newSt){at.value = newSt.justifyContent} else {at.value = ""}
-            let pt = pd("shfsPositionText"); if ("alignItems" in newSt){pt.value = newSt.alignItems} else {pt.value = ""}
-            let biu = pd("shfsBIU"); let biuS = {};
-            if (newSt["fontWeight"]){biuS["fontWeight"] = "bold"}
-            if (newSt["textDecoration"]){biuS["textDecoration"] = "underline"}
-            if (newSt["fontStyle"]){biuS["fontStyle"] = "italic"}
-            biu.refresh(biuS)
-            cf.innerText = obj.cards[newID].name; let item = shSLSave();
-            let idNum = JSON.parse(elem.dataset.data).cards.findIndex(x => x.name === cf.innerText);        //console.log(idNum,elem);
-
-        };
-        // CF OPTIONS
-        /* value, bg color, font color, font family, font size, padding, text align, text position */
-        let fv = createInput(inpList.find(x=>x.id==="slValue")); fv.inputElem.id = "shfsValue"; fv.style.padding = "0.25em 0"; flipSelectDiv.appendChild(fv);
-        let bgfcd = document.createElement("div"); bgfcd.style = "display: flex"; flipSelectDiv.appendChild(bgfcd);
-        let bgd = document.createElement("div"); bgd.style = "margin-bottom: 0.25em; display: flex; width: 50%; margin-right: 0.25em;"; bgfcd.appendChild(bgd);
-        let bg = createInput(inpList.find(x=>x.id==="slBackgroundCol")); bgd.appendChild(bg); bg.inputElem.id = "shfsBackgroundCol"; bg.childNodes[1].innerText = "Card Color"
-        let bgcol = createInput(inpList.find(x=>x.id==="slColorWheel")); bgd.appendChild(bgcol); bgcol.inputElem.style.padding = "0"
-        bgcol.inputElem.oninput = function(){bg.inputElem.value = bgcol.inputElem.value;}
-        let fcd = document.createElement("div"); fcd.style = "margin-bottom: 0.25em; display: flex; width: 50%; margin-right: 0.25em;"; bgfcd.appendChild(fcd);
-        let fc = createInput(inpList.find(x=>x.id==="slBackgroundCol")); fcd.appendChild(fc); fc.inputElem.id = "shfsFontColor"; fc.childNodes[1].innerText = "Font Color"
-        let fcc = createInput(inpList.find(x=>x.id==="slColorWheel")); fcd.appendChild(fcc); fcc.inputElem.style.padding = "0"
-        fcc.inputElem.oninput = function(){fc.inputElem.value = fcc.inputElem.value;}
-        let fffs = document.createElement("div"); fffs.style = "display: flex"; flipSelectDiv.appendChild(fffs);
-        let ff = createInput(inpList.find(x=>x.id==="slFontFamily")); ff.inputElem.id = "shfsFontFamily"; fffs.appendChild(ff);
-        let fs = createInput(inpList.find(x=>x.id==="slFontSize")); fs.inputElem.id = "shfsFontSize"; fffs.appendChild(fs); fs.style.width = "6rem"
-        let alg = document.createElement("div"); alg.style = "display: flex;"; flipSelectDiv.appendChild(alg);
-        let ta = createInput(inpList.find(x=>x.id==="slAlignText")); ta.inputElem.id = "shfsAlignText"; alg.appendChild(ta); ta.style.marginRight = "0.5em";
-        let pos = createInput(inpList.find(x=>x.id==="slAlignText")); pos.inputElem.id = "shfsPositionText"; alg.appendChild(pos); pos.childNodes[1].innerText = "Text Position"; pos.inputElem.placeholder = "Ex. Top, Center, Bottom";
-        let biu = ptCreateOps([ {icon: "format_bold", value: {fontWeight: "bold"}}, {icon: "format_italic", value: {fontStyle: "italic"}}, {icon: "format_underlined", value: {textDecoration: "underline"}}],"multi",function(){ fsSave() }); biu.id = "shfsBIU"; flipSelectDiv.appendChild(biu);
-        function fsSave(){ let styles = {};
-            if (pd("shfsValue") && pd("shfsValue").value.length > 0){styles.value = pd("shfsValue").value}
-            if (pd("shfsBackgroundCol") && pd("shfsBackgroundCol").value.length > 0){styles.backgroundColor = pd("shfsBackgroundCol").value}
-            if (pd("shfsFontColor") && pd("shfsFontColor").value.length > 0){styles.color = pd("shfsFontColor").value}
-            if (pd("shfsFontFamily") && pd("shfsFontFamily").value.length > 0){styles.fontFamily = pd("shfsFontFamily").value}
-            if (pd("shfsFontSize") && pd("shfsFontSize").value.length > 0){styles.fontSize = pd("shfsFontSize").value}
-            if (pd("shfsAlignText") && pd("shfsAlignText").value.length > 0){styles.justifyContent = pd("shfsAlignText").value}
-            if (pd("shfsPositionText") && pd("shfsPositionText").value.length > 0){styles.alignItems = pd("shfsPositionText").value}
-            if (pd("shfsBIU") !== null){ let l = getDataset("shfsBIU","data")[1];
-                for (key in l){styles[key] = l[key]}
-            }
-            let cfd = getDataset(cf,"data");
-            cfd[1].cards[cfd[1].id].style = styles;
-            cfd[0].dataset.data = JSON.stringify(cfd[1]);
-            ed[1].cards = cfd[1].cards; ed[0].dataset.data = JSON.stringify(ed[1])
-            console.log(cfd[1],ed[1])
-            shSLSave();
-
-
-
-
-            //console.log(styles)
-        }; fv.inputElem.onkeyup = fsSave; bg.inputElem.onkeyup = fsSave; fc.inputElem.onkeyup = fsSave; bgcol.inputElem.addEventListener("input",fsSave); fcc.inputElem.addEventListener("input",fsSave); ff.inputElem.onkeyup = fsSave; fs.inputElem.onkeyup = fsSave; ta.inputElem.onkeyup = fsSave; pos.inputElem.onkeyup = fsSave;
-
-    }
-    //BAR
-    if (obj.type.includes("bar")){
-        let ft = createStyleTitle("Bar Options"); div.appendChild(ft);
-        // LEFT RIGHT VAL
-        let mmv = createPack([inputRowList.find(x => x.i === "shMaxMinVal")], obj);
-        div.appendChild(mmv);
-        // TEXT
-        let txArr = [
-            {text: "[L] Text Options", style: "display: flex; align-items: center;",
-                ic1: "custom_typography", ic2: "arrow_left", icOps: [["style",["padding","0"]]],
-                id: "barLeftOption", key: "leftText"
-            },
-            {text: "[R] Text Options", style: "display: flex; align-items: center;",
-                ic1: "custom_typography", ic2: "arrow_right", icOps: [["style",["padding","0"]]],
-                id: "barRightOption", key: "rightText"
-            }
-        ]
-        for (var i=0; i<txArr.length; i++){ let txa = txArr[i];
-            let tst = createStyleTitle(txa.text,txa.style); div.appendChild(tst);
-            tst.prepend(ic(txa.ic1,txa.icOps)); tst.prepend(ic(txa.ic2,txa.icOps));
-            let barText12 = inputRowList.filter(x => x.i.includes("barText")).filter(x => x.i !== "barText3");
-            let txp = createPack(barText12,obj[txa.key]); div.appendChild(txp); txp.id = txa.id;
-        }
-
-
-        let tsH = createStyleTitle("[Button] Tracker Options","border-top: 2px solid black; display: flex; align-items: center;"); div.appendChild(tsH);
-        tsH.prepend(ic("switches",[["style",["padding","0"]]]));
-        let barText123 = inputRowList.filter(x => x.i.includes("barText"))
-        let ts = createPack(barText123,obj.tracker); div.appendChild(ts);
-        let parentRow = Array.from(ts.childNodes).find(x => Array.from(x.childNodes).findIndex(y => y.dataset.data.includes("Padding")) !== -1);
-        let rem = Array.from(parentRow.childNodes).find(x => x.dataset.data.includes("Padding"));
-        rem.remove()
-        ts.id = "barTrackerOption";
-
-
-        div.appendChild(createStyleTitle("Container Options","border-top: 2px solid black"));
-    }    //COMPONENT
-
-    //TEXT
-    if (obj.type === "text"){
-        // Value, FontSize, FontFamily, BIU, COLOR
-        console.log("text")
-
-    }
-    //GROUP
-
-    // REST
-//let mLis = cre("div",null,"padding: 1em;"); div.appendChild(mLis)
-    let mdarr = inputRowList.filter(x => x.i.includes("shNormal"))
-    let md = createPack(mdarr,obj.container); div.appendChild(md);
-    md.id = "shNormalOptions";
-
-    if (obj.type === "flipcard"){ let cf = pd("shsFlipSelect");
-        cf.onclick(); while (cf.innerText !== "Front" || (!obj.cards.find(x => x.name === "Front"))) {cf.onclick();}}
-
-    return div
-}

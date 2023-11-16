@@ -61,7 +61,7 @@ Use: Find the location in object array of the needed key as an array.
 Typically used to find location based on an item's ID
 */
 /* A few functions from a different project I abandoned */
-function deleteItem(pID,iID,list){
+function deleteItem(pID,iID,list,parentKey){
     //parent id, item id
     //console.log(pID,iID)
     let ids = [pID,iID]; var array = [] // will contain all elements that will not contain [i]
@@ -70,22 +70,23 @@ function deleteItem(pID,iID,list){
         list = array; // gets all text_list items EXCEPT for the deleting note
     }
     else{
-        let parent_id_loc = get_index("id",ids[0],list,"items")
-        let parent_insides = get_insides(parent_id_loc,list)
+        let parent_id_loc = get_index("id",ids[0],list,parentKey)
+        let parent_insides = get_insides(parent_id_loc,list,parentKey)
         let array = parent_insides.filter(x => x.id !== ids[1]);
         //console.log("259",parent_id_loc,parent_insides,array)
         //console.log(parent_id_loc); console.log(get_item(parent_id_loc,list))
-        let parent = get_item(parent_id_loc,list);
+        let parent = get_item(parent_id_loc,list,parentKey);
         parent.items = array
     }
 
     return list
 }
-function addItem(pID,obj,list){ //parent id, note id
+function addItem(pID,obj,list,parentKey){ //parent id, note id
     let m = list; let ids = [pID,obj];
     if (ids.includes("MAIN")){m.push(ids[1]); return m}
-    let addLoc = get_index("id",pID,m,"items");
-    let addObj = get_item(addLoc,m); addObj.items.push(ids[1]);
+    let addLoc = get_index("id",pID,m,parentKey);
+    let addObj = get_item(addLoc,m,parentKey);
+    addObj.items.push(ids[1]);
     return m
 }
 function get_index(key,text,array,parentKey){
@@ -126,10 +127,11 @@ function get_insides(location,list,parentKey){
     var li = list; for (var i=0; i<location.length;i++){
         if (li[location[i]] !== undefined && parentKey in li[location[i]]) {li = li[location[i]][parentKey]}
         else {li = li[location[i]]}     };
-        if (li.items){return li.items}
+        if (li[parentKey]){return li[parentKey]}
         return li; }
 function get_item(location,list,parentKey){
     var li = list;  for (var i=0; i<location.length;i++){
+        //console.log(location,li[location[i]])
         if (li[location[i]] !== undefined && parentKey in li[location[i]]) {
             if (i === location.length -1) {li = li[location[i]]}
             else {li = li[location[i]][parentKey]}
@@ -142,7 +144,7 @@ function save_item(id,newObj,list,parentKey){
 if (folder.length === 0){
     list[item] = newObj
 } else {// main
-    let t = get_item(folder, list, "items")
+    let t = get_item(folder, list, parentKey)
     t.items[item] = newObj;
 }
     return list

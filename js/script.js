@@ -1,7 +1,101 @@
 createHomePage("content")
-//createGuideDiv("content").article("module_manager")
 loadLS()
 
+
+//createGuideDiv("content")
+
+
+    // createModuleCreator("content")
+/*
+createStoryManager("content")
+pd(".smStory")[0].click()
+pd(".smOpDiv")[1].click()
+
+
+ */
+/*
+pd("storySheet").refresh(pd("ssList"),
+[
+        {
+            "id": "8834JHWB",
+            "type": "text",
+            "title": "Text A",
+            "style": {
+                "value": "Text",
+                "color": "#000000",
+                "fontSize": "18px",
+                "fontFamily": "Noto Sans",
+                "justifyContent": "left",
+                "alignItems": "center",
+                "backgroundColor": "#ffffff",
+                "opacity": "100",
+                "borderRadius": "0"
+            }
+        },
+        {
+            "id": "3212CQRF",
+            "type": "group",
+            "title": "Group Y",
+            "style": {},
+            "items": [
+                {
+                    "id": "4312ARRF",
+                    "type": "group",
+                    "title": "Group X",
+                    "style": {},
+                    "items": [
+                        {
+                            "id": "1454OLDB",
+                            "type": "text",
+                            "title": "Text-B",
+                            "style": {
+                                "value": "WOW",
+                                "color": "#000000",
+                                "fontSize": "32px",
+                                "fontFamily": "Noto Sans",
+                                "justifyContent": "left",
+                                "alignItems": "center",
+                                "backgroundColor": "#ffffff",
+                                "opacity": "100",
+                                "borderRadius": "0"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "id": "1234KMDB",
+                    "type": "text",
+                    "title": "Text-C",
+                    "style": {
+                        "value": "TEST",
+                        "color": "#000000",
+                        "fontSize": "32px",
+                        "fontFamily": "Noto Sans",
+                        "justifyContent": "right",
+                        "alignItems": "center",
+                        "backgroundColor": "#ffffff",
+                        "opacity": "100",
+                        "borderRadius": "0"
+                    }
+                }
+            ]
+        },
+        {
+            "id": "3388WLGJ",
+            "type": "module",
+            "title": "Character Name",
+            "mID": "05679BHUGA",
+            "style": {}
+        }
+])
+pd(".ssModule")[1].ondblclick()
+    pd(".scmBody")[0].childNodes[0].ondblclick();
+
+
+ */
+
+
+//ssModulePicker(pd("storySheet").order())
 
 //pd("hpButtonList").childNodes[1].click()
 //pd("mmOptions").childNodes[0].click()

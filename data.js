@@ -1,7 +1,6 @@
 var modList = [
 ];
 var storyList = [
-    {title: "Story Name", id: "abcd1234", charList: [], desc: "A short description", charSheet: [], storySheet: [] }
 ];
     // CHAR //
 /*
@@ -171,6 +170,7 @@ const dpList = [
     saveDataset("moduleCreator","data",getModOptions());
     createModList(pd("mcModList"),getModOptions());
     createPreview(pd("mcPreviewMod"),getModOptions());
+        if (pd("mcptPopup") !== null){pd("mcptPopup").remove();}
     }
 }, style: [ {affect: ["parent"], type: "width", val: "100%"}, {affect: ["parent"], type: "border-radius", val: "0.25em"}, {affect: "parent", type: "margin-right", val: "2em"}]},
 { text: "Subtype", ops: ["Text","Number","Textarea","Range","Color","Static","Input","Expandable"], id: "mcSubtype", type: "static", style: [ {affect: ["parent"], type: "width", val: "100%"}, {affect: ["parent"], type: "border-radius", val: "0.25em"}, {affect: "parent", type: "margin-right", val: "2em"},{affect: ["child"], type: "display", val: "none"}],
@@ -178,18 +178,6 @@ fList: {click: function(){saveDataset("moduleCreator","data",getModOptions());cr
 },
 {id: "mcOptions", type: "dropdown-input", text: "Options", style: [{type: "width", val: "100%",affect: ["parent"]}, {type: "height", val: "3rem", affect: "parent"}], fList: {change: function(){ saveDataset("moduleCreator","data",getModOptions()); }, click: function(){saveDataset("moduleCreator","data",getModOptions());}, keyup: function(){saveDataset("moduleCreator","data",getModOptions());}
 }},
-{id: "mctType", type: "dropdown-static", text: "Type", style: [{type: "width", val: "100%",affect: ["parent"]}, /*{type: "height", val: "3em", affect: "parent"},*/{type: "border", val: "none", affect: "parent"},{type: "border-bottom", val: "2px solid black", affect: "parent"}], ops: ["Title","Input"], fList: {click: function(){
-    let tx = event.currentTarget.innerText; let pto = document.getElementById("mcTOODiv")
-        if (pto !== null){ let dt = getDataset(pto,"data"); dt[1].type = tx; dt[0].dataset.data = JSON.stringify(dt[1])
-    ptSave(); saveDataset("moduleCreator","data",getModOptions());}
-}}
-},
-{id: "mctExpandable", defaultVal: "Right", type: "dropdown-static", text: "Expand", ops: ["Right","Bottom","Both"], style: [{type: "width", val: "8em", affect: "parent"},{type: "margin-left", val: "1em", affect: "parent"}],fList: {
-    click: function(){
-        ptSave();
-        getModOptions();
-    }}
-},
 {id: "slgAlignment", type: "dropdown-static", text: "Item Alignment", ops: ["Horizontal","Vertical"], style: [{type: "width", val: "100%", affect: "parent"},{type: "height", val: "3em", affect: "parent"}],fList: {
     click: function(){
     }}
@@ -423,8 +411,12 @@ const ceList = [
     {type: "span", tags: {innerText: "Story Sheet", className: "smOpDiv"}, methods: [
         {type: "click", func: function(){
             // Open Story Sheet
+            if (pd("storyManager").story){
             createStorySheet("storyManager",pd("storyManager").story())
             console.log("D", pd("storySheet").data())
+            pd("ssList").refresh(pd("storyManager").story().order)
+            }
+            else {toast("Please select a story!");}
         }}
     ]},
     {type: "span", tags: {innerText: "Character Sheet", className: "smOpDiv"}, methods: [
@@ -486,6 +478,45 @@ const ceList = [
                         }}
                 ]}
     ]}
+]},
+{i: "mmContextDiv", type: "div", tags: {id: "mmContextDiv"}, children: [
+    {type: "div", tags: {className: "mmContextOption"}, children: [
+        function(){return ic("move_up")},
+        {type: "div", tags: {innerText: "Move Up"}}
+    ], methods: [{type: "click", func: function(){
+                console.log("up",pd("mmContextDiv").item())
+            }}]},
+    {type: "div", tags: {className: "mmContextOption"}, children: [
+        function(){return ic("move_down")},
+        {type: "div", tags: {innerText: "Move Down"}}
+    ], methods: [{type: "click", func: function(){
+                console.log("down",pd("mmContextDiv").item())
+            }}]},
+    {type: "div", tags: {className: "mmContextOption"}, children: [
+        function(){return ic("delete_forever")},
+        {type: "div", tags: {innerText: "Delete"}}
+    ], methods: [{type: "click", func: function(){
+        let o = pd("storySheet").order();
+        let it = pd("mmContextDiv").item();
+            let p = (it.loc().slice(0,-1).length === 0) ? "MAIN" : get_item(it.loc().slice(0, -1), o, "items").id;
+            let dt = it.data();
+            let slct = pd("ssModule");
+            let slctD = (slct !== null && slct.loc) ? slct.data() : null;
+            o = deleteItem(p, dt.id, o, "items");
+
+            pd("storySheet").save(o,"order"); pd("ssList").refresh();
+            pd("mmContextDiv").remove();
+            if (pd("scStyleList").item){
+                // REMOVE STYLELIST  IF selected IS NOT DELETED ITEM, or child of it
+                if (pd("scStyleList").item.data().id === dt.id){
+                    while (pd("scStyleList").childNodes.length>0){pd("scStyleList").childNodes[0].remove();}
+                } else {
+                // SELECT IF MODULE IS NOT DELETED ITEM, or child of it
+                console.log(slctD)
+                    if (slctD !== null) {pd("ssList").select(get_index("id",slctD.id,pd("storySheet").order(),"items"));}
+                }
+            }
+            }}]}
 ]}
 ]
 
@@ -493,7 +524,10 @@ const ceList = [
 const curStateList = [
     {id: "cs1", title: "First Look", date: ["10","2023"], text: [
         "Character Creator (name pending) is public. Creating and editing stories and modules are currently available. Quite a few guides are available for them. However, Story Sheet isn't completed and Character Sheet is not done (at all). Settings as well is not available."
-    ]}
+    ]},
+    {id: "cs2", title: "Slight Improvement", date: ["11","2023"], text: [
+            "Character Sheet is technically available to utilize. Story Sheet is in the works. Current design is in development. [Stories], [Modules], [Character Sheet], and [Guide] are available to view and utilize. Check the Guide for more information on how to use this."
+        ]}
 ]
 const guideArticles = [
 {id: "basic_overview", obj: { type: "div", children: [
@@ -512,7 +546,7 @@ const guideArticles = [
     ]},
     {type: "p", tags: {innerHTML: "You will most likely spend most of your time here, trying to build the different pieces you'll want for your character sheet(s). Once you build up your pieces, you will then want to create your Story Sheet."}},
     {type: "h3", tags: {innerHTML: "Step 2 - CREATE STORY SHEET"}},
-    {type: "p", tags: {innerHTML: "The Story Sheet serves as the medium of getting information for each character. As in, everytime you create a character, you'll be using this exact sheet to input the values. You'll get to style the Character Sheets on the next step."}},
+    {type: "p", tags: {innerHTML: "The Story Sheet serves as the medium of getting information for each character, the story's character \"Blueprint\". As in, everytime you create a character, you'll be using this exact sheet to input the values. You'll get to style the Character Sheets on the next step."}},
     {type: "div", tags: {style: "display: flex; margin: 1rem;"}, children: [
         {type: "span", tags: {innerText: "Related Articles", className: "linkHeader"}},
         {type: "span", tags: {innerText: "Story Sheet", className: "link"}, methods: [{type: "click", func: function(){ pd("mainGuide").article("story_sheet")}}]},
@@ -751,7 +785,11 @@ const guideArticles = [
 ]}},
 {id: "story_sheet_tips", obj: { type: "div", children: [
     {type: "h3", tags: {innerText: "Story Sheet Tips", style: "margin: 0px; font-weight: bold;"}},
-    {type: "p", tags: {innerText: "Here are some quick tips for using the Story Sheet."}}
+    {type: "p", tags: {innerText: "Here are some quick tips for using the Story Sheet."}},
+    {type: "ul", children: [
+        {type: "li", tags: {innerText: "Don't focus too much on the looks, focus on what you need for the story."}},
+        {type: "li", tags: {innerText: "Don't focus too much on the looks, focus on what you need for the story."}}
+    ]}
 
 ]}},
 {id: "module_manager", obj: { type: "div", children: [

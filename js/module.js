@@ -145,34 +145,33 @@ if (to !== null && to.dataset.data !== undefined){ obj.table = JSON.parse(to.dat
 
 
 function ptSave(){
-let ptd = getDataset("mcTableOptionsDiv","data"); let tg = ptd[0].childNodes[1]; //let tgd = getDataset("mcTOODiv","data");
-let co = pd("mcptPopup"); if (co !== null){
-    let styles = co.getStyles();
+let ptd = getDataset("mcTableOptionsDiv","data");
+let co = pd("mcptPopup"); if (co !== null && co.getStyles && co.loc){
     let cell = co.table().findCell(co.loc());
-    let data = cell.getDataset("data");
+    let data = cell.getDataset("data"); let styles = co.getStyles();
         data.type = styles["type"]; data.value = styles["value"];
         data.style = styles; cell.setDataset("data",data);
-    //cell.setDataset("data",data)
     pd("selectedCell").setDataset("data",data)
 } // if options exists
-    // Save
+// Save
 let tbl = pd("mcPrepTable"); let arr = []; let pos = []
-for (var i=0; i<tbl.childNodes.length; i++){ let rowA = []; let row = tbl.childNodes[i];
-    for (var x=0; x<row.childNodes.length; x++){ let cl = row.childNodes[x];
-        let js = cl.getDataset("data");
+for (var i=0; i<tbl.childNodes.length; i++){ let rowA = [];
+    let row = tbl.childNodes[i];
+    for (var x=0; x<row.childNodes.length; x++){
+        let cl = row.childNodes[x]; let js = cl.getDataset("data");
+       // console.log(i,x,js)
         if (cl.id === "selectedCell"){pos = [i,x];}
         rowA.push(js)
-
     }; arr.push(rowA);
 
-    }; ptd[1].table = arr; ptd[0].dataset.data = JSON.stringify(ptd[1]); //console.log(arr)
-
-    // ptable
-    let prepB = document.getElementById("mcPrepTable").parentNode;
-    // console.log("135",ptd[1].table)
-    // console.log(pos)
-    let prep = createPrepTable(ptd[1]); prepB.appendChild(prep);
-    if (pos.length > 0){ prep.childNodes[pos[0]].childNodes[pos[1]].id = "selectedCell"; pd("selectedCell").onclick()}
+    }; ptd[1].table = arr; ptd[0].dataset.data = JSON.stringify(ptd[1]);
+    // PrepTable
+    let prep = createPrepTable(ptd[1]);
+        pd("mcTOPrev").appendChild(prep);
+    if (pos.length > 0){
+        prep.childNodes[pos[0]].childNodes[pos[1]].id = "selectedCell";
+        //pd("selectedCell").onclick()
+    }
     saveDataset("moduleCreator","data",getModOptions())
 }
 
@@ -200,9 +199,9 @@ function ptShiftTable(type,num){ let t = getDataset("mcPrepTable","data");
         }
     }
     else {console.log("err")}
-    if (document.getElementById("selectedCell") !== null) {document.getElementById("selectedCell").id = ""};
+    if (pd("selectedCell") !== null) {pd("selectedCell").id = ""};
     ptSave()
-    createPreview(document.getElementById("mcPreviewMod"),getModOptions())
+    createPreview(pd("mcPreviewMod"),getModOptions())
 }
 
 function createCell(p,cObject){
@@ -404,7 +403,7 @@ function createPackRow(obj,styleObj){
     m.list = function(){let r = {};
         for (var i=0; i<array.length; i++){ let at = array[i];
             if (at[1].classList.contains("inputContainer")){
-                if (at[1].getVal().length > 0){r[at[0]] = at[1].getVal();}
+                if (typeof at[1].getVal() === "boolean" || at[1].getVal().length > 0){r[at[0]] = at[1].getVal();}
             } else if (at[1].classList.contains("opDiv")){
                 let lis = at[1].getValue(); for (key in lis){r[key] = lis[key]}
             } else if (at[1].classList.contains("dropdownContainer")){
@@ -413,9 +412,12 @@ function createPackRow(obj,styleObj){
         };
     return r
     };
-    m.refresh = function(styleList){// console.log(styleList)
+    m.refresh = function(styleList){
+         console.log(styleList)
         for (var x=0; x<m.childNodes.length; x++){let mr = m.childNodes[x];
-            if (mr.classList.contains("opDiv")){mr.refresh(styleList);}
+            if (mr.classList.contains("opDiv")){
+                mr.refresh(styleList);
+            }
             else if (mr.classList.contains("inputContainer")){
                 if (styleList[mr.dataset.name]){mr.inputElem.value = styleList[mr.dataset.name]}
             }  else if (mr.classList.contains("dropdownContainer")) {

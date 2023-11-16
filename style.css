@@ -784,11 +784,10 @@ body .icon {
     #sshPopup {transition: 0.5s; position: absolute; width: 100%; max-height: 0; overflow: hidden; bottom: 100%;}
 
 
-.ssModule {display: flex; width: 100%; background-color: grey; border-bottom: 1px solid black; border-top: 1px solid black;}
+.ssModule {display: flex; width: 100%; background-color: white; border-bottom: 2px solid black;}
     .ssModule:hover {cursor: pointer;}
-    .ssModule:last-child {border-bottom-width: 2px;}
-    .ssModule#ssModule {background-color: orange !important;}
-    .ssModule#selectedItem {background-color: red !important;}
+    .ssModule#ssModule {color: orange !important;}
+    .ssModule#selectedItem {color: red !important;}
 .ssModule .icon {user-select: none;}
 .ssModule input {width: 100%; padding-left: 0.5em; padding-right: 0.5em; background-color: white;  border-left: none;}
 
@@ -814,7 +813,7 @@ body .icon {
     align-items: center; justify-content: center;
     padding: 0.5em 1em;
 
-    background-color: yellow;
+
 }
     .prType1 div {
         width: 100%;
@@ -847,7 +846,36 @@ body .icon {
             font-size: 1.4rem;
         }
 
+#mmContextDiv {
+    transition: 0s;
+    position: absolute;
+    left: 0;
 
+    border: 1px solid black;
+    background-color: white;
+}
+#mmContextDiv > div {
+    display: flex;
+    align-items: center;
+    padding-right: 2rem;
+}
+#mmContextDiv > div > span {
+    font-size: calc(var(--fsMain)*2);
+    font-weight: lighter;
+    padding: 0.5rem 1rem;
+}
+#mmContextDiv > div > div {
+    font-size: calc(var(--fsMain)*1.2);
+    font-weight: lighter;
+}
+#mmContextDiv > div:hover {
+    cursor: pointer;
+    background-color: orange;
+}
+#mmContextDiv > div:last-child:hover {
+    cursor: pointer;
+    background-color: red;
+}
 
 
 
@@ -870,28 +898,79 @@ body .icon {
                     .scModule#scOpenItem {background-color: pink;}
                 .scModule .icon {user-select: none;}
                 .scModule input {width: 100%; padding-left: 0.5em; padding-right: 0.5em; background-color: white;  border-left: none;}
-            .scmBody {width: 98%; padding: 0.1em 0 1em 0; background-color: white; border-radius: 0 0 0.2em 0.2em; border: 2px solid black; border-top: none; margin-bottom: 2px; display: flex; flex-direction: column; align-items: center;}
-                .scmBody > .scmBody:nth-child(even){background-color: rgba(244,244,244);}
+            .scmBody {
+                width: 100%;
+                margin-left: 1rem;
+                padding: 0.1em 0 1em 0;
+                background-color: white;
+                border-radius: 0 0 0.2em 0.2em;
+                border: 2px solid black;
+                border-top: none;
+                margin-bottom: 2px;
+                display: flex; flex-direction: column; align-items: center;
+                }
+                .scmBody > .scmBody:nth-child(even){
+                    background-color: rgba(244,244,244);
+                }
 
         #schMenu {width: 100%; height: 3rem; background-color: mediumpurple; }
             #schMenu > .icon:hover {cursor: default;}
             #schmPopup {transition: 0.5s; position: absolute; width: 100%; max-height: 0; overflow: hidden; bottom: 100%;}
             #schMenu:hover #schmPopup {max-height: 400px;}
-    #scPreview {width: 60%; height: 100%; background-color: white; border: 2px solid black; border-right: none; border-left: none;}
+    #scPreview {width: 60%; height: 100%; background-color: white; border: 2px solid black; border-right: none; border-left: none;
+        padding: 1rem;
+    }
     #scStyleList {width: 25%; height: 100%; background-color: white; border: 2px solid black; overflow: auto;}
         .slTitle {width: 100%; padding: 0.25em 0.5em; text-align: center; border-bottom: 2px solid black; border-top: 2px solid black;}
         .slTitle:first-child {margin-top: 0; border-top: none;}
-#scContextMenu {position: absolute; display: flex; flex-direction: row; width: 8rem;
-    left: 0%;
-}
-    #scContextMenu .sccmRow { display: flex; align-items: center; justify-content: left; padding: 0.25em; padding-top: 0;}
-        #scContextMenu .sccmRow:first-child {padding-left:0;}
+
+
 
 
 #ssModulePicker {width: 70%; height: 95%; background-color: white; display: flex; flex-direction: column;}
-    #scmpTitle {width: 100%; padding: 1em; font-size: 1.4em; text-align: center;}
-    #scmpList {width: 100%; height: 100%; display: flex; flex-wrap: wrap; align-content: flex-start;}
-    #scmpList #selectedModule {background-color: rgba(var(--c3C),0.9); outline: 3px solid black;}
+    #ssModulePicker .top {
+        width: 100%;
+        padding: 1rem 2rem;
+        border-bottom: 0.2rem solid black;
+        display: flex;
+    }
+    #ssModulePicker .ssmpOpDiv:hover {
+        cursor: unset;
+        text-decoration: unset;
+    }
+    #ssModulePicker .top .ssmpOpDiv:first-child {
+        width: 100%;
+    }
+    #ssModulePicker .top .ssmpOpDiv:last-child {
+        font-weight: bold;
+        cursor: pointer;
+    } #ssModulePicker .top .ssmpOpDiv:last-child:hover {
+        text-decoration: underline;
+    }
+#ssMMList {
+    padding: 2rem 1rem;
+    height: 100%;
+}
+
+#ssModulePicker .bot {
+    height: 40vh;
+    border-top: 0.2rem solid black;
+    background-color: white;
+}
+#ssModulePicker .bot .details {
+    display: flex;
+    padding: 0.2rem 1rem;
+    border-bottom: 0.2rem solid black;
+    align-items: center;
+}
+#ssModulePicker .bot .details div {
+    display: flex;
+    margin-right: 2rem;
+}
+#ssModulePicker .bot .preview {
+    padding: 1rem;
+}
+
 
 
 .menuList {user-select: none;}

@@ -38,8 +38,8 @@ div.appendChild(cs);
     cs.appendChild(csdp);
     // text
     let cstd = cre("div"); cstd.id = "hpcsTextDiv"; cs.appendChild(cstd);
-    // SELECT first
-    csdp.list()[0].click()
+
+                csdp.list()[1].click()
 // button lists!
 // Stories, Modules, How to Use, Settings
 let bl = createElement(ceList.find(x => x.i === "hpBtns"));
@@ -145,7 +145,7 @@ let right = cre("div","right"); div.appendChild(right);
 c.appendChild(div)
 sl.createList()
 
-div.select("abcd1234")
+//div.select("abcd1234")
 }
 function smEditCharacter(parent,story,charID){
 if (pd("smCharacterEditor") !== null){pd("smCharacterEditor").remove();}
@@ -372,7 +372,7 @@ let lf = createElement({type:"div",tags:{className:"left"}}); div.appendChild(lf
 // BASIC OVERVIEW, Creating modules, Story Sheet, Character Sheet
 let bcsc = [
     {icon: "arrow_selector_tool", name: "Basic Overview", article: "basic_overview"},
-    {icon: "add_ad", name: "Creating Module", article: "creating_module"},
+    {icon: "add_ad", name: "Creating Module", article: "create_module"},
     {icon: "contract_edit", name: "Story Sheet", article: "story_sheet"},
     {icon: "person_add", name: "Character Sheet", article: "chararacter_sheet"}
 ];
