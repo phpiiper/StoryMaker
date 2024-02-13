@@ -1,3 +1,6 @@
+# VIEW NEW WIP VERSION
+[Link to Repo](https://github.com/plpiiper/StoryMakerAgain)
+
 # Story Maker
 This is a web-based tool that allows you to plan characters in a transformative way--in the form of modular building blocks you get to create.
 
